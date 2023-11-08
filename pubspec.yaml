@@ -1,0 +1,22 @@
+name: alati_app
+description: A Flutter app with drag-and-drop pie chart.
+version: 1.0.0
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"  # Replace with your desired SDK version
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_pie_chart: ^0.0.1
+  draggable_scrollbar: ^0.1.0
+  fl_chart: ^0.40.0 # Use the latest version available
+  reorderables:
+  charts_flutter: 0.12.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
