@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-class LineChartSample7 extends StatelessWidget {
-  LineChartSample7({
+class LineChartCapacity extends StatelessWidget {
+  LineChartCapacity({
     Color? line1Color,
     Color? line2Color,
     Color? betweenColor,
@@ -20,7 +20,7 @@ class LineChartSample7 extends StatelessWidget {
       aspectRatio: 2,
       child: Padding(
         padding: const EdgeInsets.only(
-          left: 10,
+          left: 18,
           right: 18,
           top: 10,
           bottom: 4,
@@ -119,7 +119,7 @@ class LineChartSample7 extends StatelessWidget {
                 showTitles: true,
                 getTitles: (value) => (value * 10000 + 5000).toString(),
                 interval: 1,
-                reservedSize: 36,
+                reservedSize: 50,
               ),
               topTitles: SideTitles(showTitles: false),
               rightTitles: SideTitles(showTitles: false),

@@ -2,10 +2,10 @@ import 'package:alati_app/dashboard/dashboard.dart';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(FoamToolsApp());
 }
 
-class MyApp extends StatelessWidget {
+class FoamToolsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

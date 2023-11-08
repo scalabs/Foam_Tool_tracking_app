@@ -1,9 +1,9 @@
-import 'package:alati_app/Tabs/line_chart.dart';
+import 'package:alati_app/screens/line_chart.dart';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 //placeholder za funkciju
-class Tab3 extends StatelessWidget {
+class ReportsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -11,7 +11,7 @@ class Tab3 extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(height: 20),
-          LineChartSample7(),
+          LineChartCapacity(),
           ElevatedButton(
             onPressed: () {
               final math.Random random = math.Random();

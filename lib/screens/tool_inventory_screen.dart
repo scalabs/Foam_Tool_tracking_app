@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
 //placeholdr da se importuje alat
-class Tab2 extends StatefulWidget {
+class ToolInventoryScreen extends StatefulWidget {
   @override
-  _Tab2State createState() => _Tab2State();
+  _ToolInventoryScreenState createState() => _ToolInventoryScreenState();
 }
 
 final List<Tool> tools = [];
 final TextEditingController toolNameController = TextEditingController();
 final TextEditingController toolConditionController = TextEditingController();
 
-class _Tab2State extends State<Tab2> {
+class _ToolInventoryScreenState extends State<ToolInventoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Center(

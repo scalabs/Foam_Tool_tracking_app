@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:alati_app/Tabs/tab1.dart';
-import 'package:alati_app/Tabs/tab2.dart';
-import 'package:alati_app/Tabs/tab3.dart';
-import 'package:alati_app/Tabs/tab4.dart';
+import 'package:alati_app/screens/roundtable_screen.dart';
+import 'package:alati_app/screens/tool_inventory_screen.dart';
+import 'package:alati_app/screens/reports_screen.dart';
+import 'package:alati_app/screens/user_settings_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({Key? key}) : super(key: key);
@@ -37,11 +37,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Tabovi koji se returnjau
     switch (selectedTabIndex) {
       case 0:
-        return Tab1();
+        return ToolInventoryScreen();
       case 1:
-        return Tab2();
+        return ToolInventoryScreen();
       case 2:
-        return Tab3();
+        return ReportsScreen();
       case 3:
         return Tab4();
       default:

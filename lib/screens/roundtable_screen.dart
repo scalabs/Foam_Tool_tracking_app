@@ -1,15 +1,13 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-class Tab1 extends StatefulWidget {
+class RoundTableScreen extends StatefulWidget {
   @override
-  _Tab1State createState() => _Tab1State();
+  _RoundTableScreenState createState() => _RoundTableScreenState();
 }
 
 //lista za drag and drop
-class _Tab1State extends State<Tab1> {
+class _RoundTableScreenState extends State<RoundTableScreen> {
   final List<String> lotrItems = [
     'Tools Cleaned',
     'Tools Not Cleaned',
