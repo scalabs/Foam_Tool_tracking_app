@@ -10,8 +10,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: DashboardScreen(),
+    return MaterialApp(
+      home: const DashboardScreen(),
+      theme: ThemeData(
+        useMaterial3: false,
+      ),
     );
   }
 }
