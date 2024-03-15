@@ -1,12 +1,12 @@
+import 'package:alati_app/tabs/reports.dart';
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:alati_app/screens/roundtable_screen.dart';
-import 'package:alati_app/screens/tool_inventory_screen.dart';
-import 'package:alati_app/screens/reports_screen.dart';
-import 'package:alati_app/screens/user_settings_screen.dart';
+import 'package:alati_app/tabs/current_state_overview.dart';
+import 'package:alati_app/tabs/planning.dart';
+import 'package:alati_app/tabs/tool_overview.dart';
+import 'package:alati_app/tabs/maintenace.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -17,37 +17,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool logout = false;
   int selectedTabIndex = 0;
 
-  // Imena tabova
-  List<String> tabTitles = [
-    'Foam tool overview',
-    'Tool Importer',
-    'Report',
-    'User Settings',
-  ];
-
-  // Ikone za tabove
+// Ikone za tabove
   List<IconData> tabIcons = [
     Icons.segment_outlined,
     Icons.space_dashboard_outlined,
     Icons.calendar_today,
     Icons.settings,
+    Icons.report, // Add an extra icon
+  ];
+
+// Imena tabova
+  List<String> tabTitles = [
+    'Current state overview',
+    'Planning',
+    'Tool Overview',
+    'Maintenace',
+    'User settings',
   ];
 
   Widget _buildPlaceholderBody(BuildContext context) {
     // Tabovi koji se returnjau
     switch (selectedTabIndex) {
       case 0:
-        return ToolInventoryScreen();
+        return const Tab1();
       case 1:
-        return ToolInventoryScreen();
+        return const Tab2();
       case 2:
-        return ReportsScreen();
+        return const Tab3();
       case 3:
-        return Tab4();
+        return const Tab4();
+      case 4:
+        return const Tab5();
       default:
         return Center(
-            child:
-                Text("Placeholder Widget for ${tabTitles[selectedTabIndex]}"));
+          child: Text("Placeholder Widget for ${tabTitles[selectedTabIndex]}"),
+        );
     }
   }
 
@@ -60,25 +64,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
         });
       },
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-        padding: EdgeInsets.all(8),
+        margin: const EdgeInsets.symmetric(
+            horizontal: 4, vertical: 12), // Adjusted margin
+        padding: const EdgeInsets.all(4), // Adjusted padding
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: index == selectedTabIndex
               ? Colors.blue[400]!.withAlpha(100)
               : Colors.transparent,
         ),
-        child: Row(children: [
-          Icon(
-            icon,
-            color: Colors.blue[700],
-          ),
-          if (expanded)
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: Text(title),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: Colors.blue[700],
             ),
-        ]),
+            if (expanded)
+              Padding(
+                padding: const EdgeInsets.only(left: 16.0),
+                child: Text(title),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -87,26 +94,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildInfoMenu(BuildContext context) {
     return IconButton(
       onPressed: () async {
-        var version = '0.0.0'; // Placeholder verzija
+        var version = '0.5'; // Placeholder verzija
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                ListTile(
+                const ListTile(
                   title: Text('Jifeng Foam tool tracking app'),
                   subtitle: Text('App name'),
                 ),
                 ListTile(
                   title: Text(version),
-                  subtitle: Text('App version'),
+                  subtitle: const Text('App version'),
                 ),
                 ListTile(
                   title: Text(DateTime.now().toIso8601String()),
-                  subtitle: Text('Application Date'),
+                  subtitle: const Text('Application Date'),
                 ),
-                ListTile(
+                const ListTile(
                   title: Text(
                     'Location: Database Location', // Placeholder tekst
                   ),
@@ -119,13 +126,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onPressed: () {
                   Navigator.maybePop(context);
                 },
-                child: Text('Close'),
+                child: const Text('Close'),
               )
             ],
           ),
         );
       },
-      icon: Icon(Icons.info_outline),
+      icon: const Icon(Icons.info_outline),
     );
   }
 
@@ -135,10 +142,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Foam Tool Tracker'),
+        title: const Text('Foam Tool Tracker'),
         actions: [
           _buildInfoMenu(context),
-          VerticalDivider(color: Colors.white),
+          const VerticalDivider(color: Colors.white),
           IconButton(
             onPressed: () {
               setState(() {
@@ -148,8 +155,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // Isto kao i predhodno
             },
             icon: logout
-                ? CircularProgressIndicator(color: Colors.white)
-                : Icon(Icons.logout),
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Icon(Icons.logout),
           ),
         ],
       ),
@@ -178,12 +185,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       tabTitles[index],
                       index,
                     ),
-                  Divider(),
+                  const Divider(),
                   ListTile(
                     leading: Icon(expanded
                         ? Icons.arrow_back_ios
                         : Icons.arrow_forward_ios),
-                    title: Text(''),
+                    title: const Text(''),
                     onTap: () {
                       setState(() {
                         expanded = !expanded;
