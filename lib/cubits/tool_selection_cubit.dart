@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '/models/tool_model.dart';
 
-class MaintenanceCubit extends Cubit<List<Tool>> {
-  MaintenanceCubit() : super([]);
+class ToolSelectionCubit extends Cubit<List<Tool>> {
+  ToolSelectionCubit() : super([]);
 
   void updateTools(List<Tool> newTools) {
     emit(newTools);

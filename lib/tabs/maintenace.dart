@@ -1,7 +1,7 @@
+import 'package:alati_app/cubits/maintenance.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Tab4 extends StatefulWidget {
@@ -12,66 +12,29 @@ class Tab4 extends StatefulWidget {
 }
 
 class _Tab4State extends State<Tab4> {
-  List<String> filterOptions = [
+  final List<String> filterOptions = [
     'All',
     'Tools Cleaned',
     'Tools Not Cleaned',
     'Tools Calibrated',
     'Tools Not Calibrated',
   ];
+  final cubit = ToolFetcherCubit();
   String selectedFilter = 'All';
 
-  List<String> tools = [];
   int numberOfSections = 22;
-  List<String?> addedTools =
-      List.generate(22, (index) => null); // Initialize with null
+  List<String?> addedTools = List.generate(
+    22,
+    (index) => null,
+  ); // Initialize with null
   final _controller = TextEditingController();
   late SharedPreferences prefs;
 
   @override
   void initState() {
-    fetchData();
+    cubit.fetchData(filterOptions.first);
     _loadSavedTableName();
     super.initState();
-  }
-
-  Future<void> fetchData() async {
-    String filterEndpoint = '';
-    switch (selectedFilter) {
-      case 'Tools Cleaned':
-        filterEndpoint = 'cleaned';
-        break;
-      case 'Tools Not Cleaned':
-        filterEndpoint = 'not_cleaned';
-        break;
-      case 'Tools Calibrated':
-        filterEndpoint = 'calibrated';
-        break;
-      case 'Tools Not Calibrated':
-        filterEndpoint = 'not_calibrated';
-        break;
-      default:
-        // Fetch all tools if no filter is selected
-        break;
-    }
-
-    String apiUrl = filterEndpoint.isNotEmpty
-        ? 'http://127.0.0.1:5000/api/$filterEndpoint'
-        : 'http://127.0.0.1:5000/api/active';
-
-    final response = await http.get(
-      Uri.parse(apiUrl),
-      headers: {'Content-Type': 'application/json'},
-    );
-
-    if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
-      setState(() {
-        tools = List<String>.from(data.map((item) => item['Alat']));
-      });
-    } else {
-      debugPrint('Failed to load data');
-    }
   }
 
   Future<void> _loadSavedTableName() async {
@@ -100,7 +63,9 @@ class _Tab4State extends State<Tab4> {
               onChanged: (String? value) {
                 setState(() {
                   selectedFilter = value!;
-                  fetchData(); // Fetch data again when filter changes
+                  cubit.fetchData(
+                    selectedFilter,
+                  ); // Fetch data again when filter changes
                 });
               },
               items:
@@ -116,21 +81,29 @@ class _Tab4State extends State<Tab4> {
         const VerticalDivider(),
         SizedBox(
           width: 250,
-          child: tools.isNotEmpty
-              ? ListView.builder(
+          child: BlocBuilder<ToolFetcherCubit, List<String>>(
+            bloc: ToolFetcherCubit(),
+            builder: (context, state) {
+              final tools = state;
+              if (tools.isNotEmpty) {
+                return ListView.builder(
                   itemCount: tools.length,
                   itemBuilder: (context, index) {
                     return ListTile(
                       title: Text(tools[index]),
                       onTap: () {
-                        showAddToolDialog(index);
+                        showAddToolDialog(index, tools);
                       },
                     );
                   },
-                )
-              : const Center(
+                );
+              } else {
+                return const Center(
                   child: CircularProgressIndicator(),
-                ),
+                );
+              }
+            },
+          ),
         ),
         const VerticalDivider(),
         Expanded(
@@ -164,17 +137,23 @@ class _Tab4State extends State<Tab4> {
                                 titlePositionPercentageOffset: 0.6,
                                 badgeWidget: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        showAddToolDialog(e);
-                                      });
+                                  child: BlocBuilder<ToolFetcherCubit,
+                                      List<String>>(
+                                    builder: (context, state) {
+                                      final tools = state;
+                                      return IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            showAddToolDialog(e, tools);
+                                          });
+                                        },
+                                        icon: tool == null
+                                            ? const Icon(Icons
+                                                .add_circle_outline_outlined)
+                                            : const Icon(Icons
+                                                .remove_circle_outline_outlined),
+                                      );
                                     },
-                                    icon: tool == null
-                                        ? const Icon(
-                                            Icons.add_circle_outline_outlined)
-                                        : const Icon(Icons
-                                            .remove_circle_outline_outlined),
                                   ),
                                 ),
                                 badgePositionPercentageOffset: 0.85,
@@ -237,7 +216,7 @@ class _Tab4State extends State<Tab4> {
     );
   }
 
-  void showAddToolDialog(int sectionIndex) {
+  void showAddToolDialog(int sectionIndex, List<String> tools) {
     showDialog(
       context: context,
       builder: (context) {
