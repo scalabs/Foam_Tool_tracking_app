@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 
-class Tab3 extends StatefulWidget {
-  const Tab3({super.key});
+class ToolsOverviewScreen extends StatefulWidget {
+  const ToolsOverviewScreen({super.key});
 
   @override
-  State<Tab3> createState() => _Tab3State();
+  State<ToolsOverviewScreen> createState() => _ToolsOverviewScreenState();
 }
 
-class _Tab3State extends State<Tab3> {
+class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
   List<DatabaseEntry> databaseEntries = [];
   TextEditingController toolController = TextEditingController();
   TextEditingController projectController = TextEditingController();

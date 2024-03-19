@@ -2,14 +2,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '/models/week_of_the_year.dart';
 
-class Tab2 extends StatefulWidget {
-  const Tab2({super.key});
+class PlanningScreen extends StatefulWidget {
+  const PlanningScreen({super.key});
 
   @override
-  State<Tab2> createState() => _Tab2State();
+  State<PlanningScreen> createState() => _PlanningScreenState();
 }
 
-class _Tab2State extends State<Tab2> {
+class _PlanningScreenState extends State<PlanningScreen> {
   late final WeekOfTheYear selectedWeek;
 
   @override

@@ -8,6 +8,8 @@ class ToolFetcherCubit extends Cubit<List<String>> {
   ToolFetcherCubit() : super([]);
 
   Future<void> fetchData(String selectedFilter) async {
+    emit(['Tool 1', 'Tool 2', 'Tool 3', 'Tool 4']);
+    return;
     String filterEndpoint = '';
     switch (selectedFilter) {
       case 'Tools Cleaned':

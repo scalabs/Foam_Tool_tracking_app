@@ -18,8 +18,8 @@ class ReadOnlyWrapper extends StatelessWidget {
   }
 }
 
-class Tab1 extends StatelessWidget {
-  const Tab1({super.key});
+class CurrentStateScreen extends StatelessWidget {
+  const CurrentStateScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

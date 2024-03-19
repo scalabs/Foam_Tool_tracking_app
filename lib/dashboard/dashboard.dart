@@ -39,15 +39,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     // Tabovi koji se returnjau
     switch (selectedTabIndex) {
       case 0:
-        return const Tab1();
+        return const CurrentStateScreen();
       case 1:
-        return const Tab2();
+        return const PlanningScreen();
       case 2:
-        return const Tab3();
+        return const ToolsOverviewScreen();
       case 3:
-        return const Tab4();
+        return const MaintenanceScreen();
       case 4:
-        return const Tab5();
+        return const ReportsScreen();
       default:
         return Center(
           child: Text("Placeholder Widget for ${tabTitles[selectedTabIndex]}"),
