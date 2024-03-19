@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
@@ -8,8 +9,10 @@ class ToolFetcherCubit extends Cubit<List<String>> {
   ToolFetcherCubit() : super([]);
 
   Future<void> fetchData(String selectedFilter) async {
-    //emit(['Tool 1', 'Tool 2', 'Tool 3', 'Tool 4']);
-    //return;
+    if (kDebugMode) {
+      emit(['Tool 1', 'Tool 2', 'Tool 3', 'Tool 4']);
+      return;
+    }
     String filterEndpoint = '';
     switch (selectedFilter) {
       case 'Tools Cleaned':
