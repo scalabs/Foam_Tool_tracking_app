@@ -117,66 +117,69 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
-                Center(
-                  child: SizedBox(
-                    width: 900,
-                    height: 900,
-                    child: DragTarget<String>(
-                      builder: (context, candidateData, rejectedData) {
-                        return PieChart(
-                          PieChartData(
-                            sections: List.generate(
-                              numberOfSections,
-                              (index) => index,
-                            ).map(
-                              (e) {
-                                var tool = addedTools[e];
-                                return PieChartSectionData(
-                                  color: Colors.blue[300],
-                                  value: 1,
-                                  title: tool ?? (e + 1).toString(),
-                                  radius: 400,
-                                  titlePositionPercentageOffset: 0.6,
-                                  badgeWidget: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: BlocBuilder<ToolFetcherCubit,
-                                        List<String>>(
-                                      builder: (context, state) {
-                                        final tools = state;
-                                        return IconButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              showAddToolDialog(e, tools);
-                                            });
-                                          },
-                                          icon: tool == null
-                                              ? const Icon(Icons
-                                                  .add_circle_outline_outlined)
-                                              : const Icon(Icons
-                                                  .remove_circle_outline_outlined),
-                                        );
-                                      },
+                LayoutBuilder(builder: (context, constraints) {
+                  final size = constraints.maxWidth - 20;
+                  return Center(
+                    child: SizedBox(
+                      width: size,
+                      height: size,
+                      child: DragTarget<String>(
+                        builder: (context, candidateData, rejectedData) {
+                          return PieChart(
+                            PieChartData(
+                              sections: List.generate(
+                                numberOfSections,
+                                (index) => index,
+                              ).map(
+                                (e) {
+                                  var tool = addedTools[e];
+                                  return PieChartSectionData(
+                                    color: Colors.blue[300],
+                                    value: 1,
+                                    title: tool ?? (e + 1).toString(),
+                                    radius: size / 2,
+                                    titlePositionPercentageOffset: 0.6,
+                                    badgeWidget: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: BlocBuilder<ToolFetcherCubit,
+                                          List<String>>(
+                                        builder: (context, state) {
+                                          final tools = state;
+                                          return IconButton(
+                                            onPressed: () {
+                                              setState(() {
+                                                showAddToolDialog(e, tools);
+                                              });
+                                            },
+                                            icon: tool == null
+                                                ? const Icon(Icons
+                                                    .add_circle_outline_outlined)
+                                                : const Icon(Icons
+                                                    .remove_circle_outline_outlined),
+                                          );
+                                        },
+                                      ),
                                     ),
-                                  ),
-                                  badgePositionPercentageOffset: 0.85,
-                                );
-                              },
-                            ).toList(),
-                            centerSpaceRadius: 100,
-                            sectionsSpace: 6,
-                            startDegreeOffset: 180,
-                          ),
-                        );
-                      },
-                      onWillAcceptWithDetails: (data) {
-                        return true;
-                      },
-                      onAcceptWithDetails: (data) {
-                        removeItem(data.data);
-                      },
+                                    badgePositionPercentageOffset: 0.85,
+                                  );
+                                },
+                              ).toList(),
+                              centerSpaceRadius: 100,
+                              sectionsSpace: 6,
+                              startDegreeOffset: 180,
+                            ),
+                          );
+                        },
+                        onWillAcceptWithDetails: (data) {
+                          return true;
+                        },
+                        onAcceptWithDetails: (data) {
+                          removeItem(data.data);
+                        },
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                }),
                 Positioned(
                   top: 0,
                   right: 0,
