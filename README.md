@@ -1,6 +1,29 @@
-# alati_app
+# Foam_Tool_Tracking_App
 
-A new Flutter project.
+This Flutter app is a tool tracking system designed to manage and monitor various tools within a specific context. Users can view, add, modify, and delete tool entries through a user-friendly interface. The app fetches data from an API, allowing real-time updates and interactions with the database. It features filtering options to streamline tool visualization based on criteria such as cleanliness and calibration status. Additionally, users can perform actions like adding new tools or updating tool statuses, all with the convenience of intuitive UI elements.
+
+
+How to Start using it locally:
+
+1.Adjust the api python file to your needs
+2.Start the api
+3.In tabs change the url to your api 
+Example:
+In Tool_Overview.dart
+On line:
+37:
+  Future<void> fetchData() async {
+    final response = await http.get(
+      Uri.parse('http://10.3.41.36:7000/api/active'), //Change to your url
+      headers: {'Content-Type': 'application/json'},
+    );
+4.Flutter pub get (Fetch dependencies)
+5.Flutter run (Open the app)
+
+
+
+More tricks and tips:
+
 
 ## Getting Started
 
