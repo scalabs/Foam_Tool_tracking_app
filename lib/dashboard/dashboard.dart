@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:alati_app/tabs/current_state_overview.dart';
 import 'package:alati_app/tabs/planning.dart';
 import 'package:alati_app/tabs/tool_overview.dart';
-import 'package:alati_app/tabs/maintenace.dart';
+import 'package:alati_app/tabs/maintenance.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});

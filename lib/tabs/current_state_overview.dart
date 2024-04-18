@@ -28,7 +28,7 @@ class CurrentStateScreen extends StatelessWidget {
         title: const Text('Tab 1 (Read-Only)'),
       ),
       body: const ReadOnlyWrapper(
-        child: Tab4(),
+        child: MaintenanceScreen(),
       ),
     );
   }
