@@ -1,4 +1,5 @@
 import 'package:alati_app/cubits/tool_fetcher_cubit.dart';
+import 'package:alati_app/cubits/tool_selection_cubit.dart';
 import 'package:alati_app/dashboard/dashboard.dart';
 import 'package:alati_app/services/tools_service.dart';
 import 'package:flutter/material.dart';
@@ -15,8 +16,16 @@ class DebugFoamApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return RepositoryProvider(
       create: (context) => FakeToolsService(toolsCount: 22),
-      child: BlocProvider(
-        create: (context) => ToolFetcherCubit(context.read<FakeToolsService>()),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) =>
+                ToolFetcherCubit(context.read<FakeToolsService>()),
+          ),
+          BlocProvider(
+            create: (context) => ToolSelectionCubit(),
+          ),
+        ],
         child: MaterialApp(
           home: const DashboardScreen(),
           theme: ThemeData(

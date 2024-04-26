@@ -1,20 +1,30 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '/models/tool_model.dart';
 
-class ToolSelectionCubit extends Cubit<List<Tool>> {
-  ToolSelectionCubit() : super([]);
+class ToolSelectionCubit extends Cubit<List<Tool?>> {
+  ToolSelectionCubit() : super(List.generate(22, (index) => null));
 
-  void updateTools(List<Tool> newTools) {
-    emit(newTools);
-  }
-
-  void addTool(Tool tool) {
-    state.add(tool);
+  void addTool(int index, String toolLabel) {
+    state[index] = Tool(
+      toolLabel,
+      '',
+    );
     emit(List.from(state));
   }
 
-  void removeTool(String toolName) {
-    state.removeWhere((tool) => tool.name == toolName);
+  void removeTool(int index) {
+    state.removeAt(index);
     emit(List.from(state));
+  }
+
+  void resizeTable(int size) {
+    final newTable = List.generate(size, (index) {
+      if (index < state.length) {
+        return state[index];
+      } else {
+        return null;
+      }
+    });
+    emit(newTable);
   }
 }
