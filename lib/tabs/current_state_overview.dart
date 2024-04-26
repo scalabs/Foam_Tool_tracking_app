@@ -1,4 +1,4 @@
-import 'package:alati_app/Tabs/Maintenace.dart';
+import 'package:alati_app/tabs/maintenance.dart';
 import 'package:flutter/material.dart';
 
 class ReadOnlyWrapper extends StatelessWidget {

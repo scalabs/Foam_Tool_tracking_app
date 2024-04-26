@@ -19,7 +19,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     'Tools Calibrated',
     'Tools Not Calibrated',
   ];
-  final cubit = ToolFetcherCubit();
+
   String selectedFilter = 'All';
 
   int numberOfSections = 22;
@@ -32,7 +32,6 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
 
   @override
   void initState() {
-    cubit.fetchData(filterOptions.first);
     _loadSavedTableName();
     super.initState();
   }
@@ -51,42 +50,40 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => cubit,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          SizedBox(
-            width: 250,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: DropdownButton<String>(
-                value: selectedFilter,
-                onChanged: (String? value) {
-                  setState(() {
-                    selectedFilter = value!;
-                    cubit.fetchData(
-                      selectedFilter,
-                    ); // Fetch data again when filter changes
-                  });
-                },
-                items:
-                    filterOptions.map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SizedBox(
+          width: 250,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: DropdownButton<String>(
+              value: selectedFilter,
+              onChanged: (String? value) {
+                setState(() {
+                  selectedFilter = value!;
+                  context.read<ToolFetcherCubit>().fetchData(
+                        selectedFilter,
+                      ); // Fetch data again when filter changes
+                });
+              },
+              items:
+                  filterOptions.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
             ),
           ),
-          const VerticalDivider(),
-          SizedBox(
-            width: 250,
-            child: BlocBuilder<ToolFetcherCubit, List<String>>(
-              bloc: ToolFetcherCubit(),
-              builder: (context, state) {
-                final tools = state;
+        ),
+        const VerticalDivider(),
+        SizedBox(
+          width: 250,
+          child: BlocBuilder<ToolFetcherCubit, ToolFetcherState>(
+            builder: (context, state) {
+              if (state is ToolsFetcherSuccess) {
+                final tools = state.tools;
                 if (tools.isNotEmpty) {
                   return ListView.builder(
                     itemCount: tools.length,
@@ -104,45 +101,49 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                     child: CircularProgressIndicator(),
                   );
                 }
-              },
-            ),
+              } else {
+                return const Center(child: CircularProgressIndicator());
+              }
+            },
           ),
-          const VerticalDivider(),
-          Expanded(
-            child: InteractiveViewer(
-              child: Stack(
-                children: [
-                  Center(
-                    child: Text(
-                      _controller.text,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
+        ),
+        const VerticalDivider(),
+        Expanded(
+          child: InteractiveViewer(
+            child: Stack(
+              children: [
+                Center(
+                  child: Text(
+                    _controller.text,
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-                  LayoutBuilder(builder: (context, constraints) {
-                    final size = constraints.maxWidth - 200;
-                    return Center(
-                      child: SizedBox(
-                        width: size,
-                        height: size,
-                        child: DragTarget<String>(
-                          builder: (context, candidateData, rejectedData) {
-                            return PieChart(
-                              PieChartData(
-                                sections: addedTools.asMap().entries.map(
-                                  (e) {
-                                    var tool = e.value;
-                                    return PieChartSectionData(
-                                      color: Colors.blue[300],
-                                      value: 1,
-                                      title: tool ?? (e.key + 1).toString(),
-                                      radius: size / 2,
-                                      titlePositionPercentageOffset: 0.6,
-                                      badgeWidget: Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: BlocBuilder<ToolFetcherCubit,
-                                            List<String>>(
-                                          builder: (context, state) {
-                                            final tools = state;
+                ),
+                LayoutBuilder(builder: (context, constraints) {
+                  final size = constraints.maxWidth - 200;
+                  return Center(
+                    child: SizedBox(
+                      width: size,
+                      height: size,
+                      child: DragTarget<String>(
+                        builder: (context, candidateData, rejectedData) {
+                          return PieChart(
+                            PieChartData(
+                              sections: addedTools.asMap().entries.map(
+                                (e) {
+                                  var tool = e.value;
+                                  return PieChartSectionData(
+                                    color: Colors.blue[300],
+                                    value: 1,
+                                    title: tool ?? (e.key + 1).toString(),
+                                    radius: size / 2,
+                                    titlePositionPercentageOffset: 0.6,
+                                    badgeWidget: Padding(
+                                      padding: const EdgeInsets.all(8.0),
+                                      child: BlocBuilder<ToolFetcherCubit,
+                                          ToolFetcherState>(
+                                        builder: (context, state) {
+                                          if (state is ToolsFetcherSuccess) {
+                                            final tools = state.tools;
                                             return IconButton(
                                               onPressed: () {
                                                 setState(() {
@@ -156,78 +157,80 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                                                   : const Icon(Icons
                                                       .remove_circle_outline_outlined),
                                             );
-                                          },
-                                        ),
+                                          } else {
+                                            return const CircularProgressIndicator();
+                                          }
+                                        },
                                       ),
-                                      badgePositionPercentageOffset: 0.85,
-                                    );
-                                  },
-                                ).toList(),
-                                centerSpaceRadius: 100,
-                                sectionsSpace: 6,
-                                startDegreeOffset: 180,
-                              ),
-                            );
-                          },
-                          onWillAcceptWithDetails: (data) {
-                            return true;
-                          },
-                          onAcceptWithDetails: (data) {
-                            removeItem(data.data);
-                          },
-                        ),
-                      ),
-                    );
-                  }),
-                  Positioned(
-                    top: 0,
-                    right: 0,
-                    child: Container(
-                      margin: const EdgeInsets.all(12),
-                      width: 200,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextField(
-                            controller: _controller,
-                            onChanged: (v) {
-                              _saveTableName(v);
-                              setState(() {});
-                            },
-                            decoration: const InputDecoration(
-                                helperText: 'Roundtable name'),
-                          ),
-                          Slider(
-                            value: (numberOfSections / 40),
-                            onChanged: (v) {
-                              final newLength = (v * 40).toInt().clamp(1, 40);
-                              final newAddedTools = List.generate(
-                                numberOfSections,
-                                (index) => index < addedTools.length
-                                    ? addedTools[index]
-                                    : null,
-                              );
-                              setState(() {
-                                numberOfSections = newLength;
-                                addedTools = newAddedTools;
-                              });
-                            },
-                          ),
-                          Text(
-                            'Number of sections: $numberOfSections',
-                            style: TextStyle(
-                                color: Colors.grey[600], fontSize: 12),
-                          ),
-                        ],
+                                    ),
+                                    badgePositionPercentageOffset: 0.85,
+                                  );
+                                },
+                              ).toList(),
+                              centerSpaceRadius: 100,
+                              sectionsSpace: 6,
+                              startDegreeOffset: 180,
+                            ),
+                          );
+                        },
+                        onWillAcceptWithDetails: (data) {
+                          return true;
+                        },
+                        onAcceptWithDetails: (data) {
+                          removeItem(data.data);
+                        },
                       ),
                     ),
-                  )
-                ],
-              ),
+                  );
+                }),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    margin: const EdgeInsets.all(12),
+                    width: 200,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          controller: _controller,
+                          onChanged: (v) {
+                            _saveTableName(v);
+                            setState(() {});
+                          },
+                          decoration: const InputDecoration(
+                              helperText: 'Roundtable name'),
+                        ),
+                        Slider(
+                          value: (numberOfSections / 40),
+                          onChanged: (v) {
+                            final newLength = (v * 40).toInt().clamp(1, 40);
+                            final newAddedTools = List.generate(
+                              numberOfSections,
+                              (index) => index < addedTools.length
+                                  ? addedTools[index]
+                                  : null,
+                            );
+                            setState(() {
+                              numberOfSections = newLength;
+                              addedTools = newAddedTools;
+                            });
+                          },
+                        ),
+                        Text(
+                          'Number of sections: $numberOfSections',
+                          style:
+                              TextStyle(color: Colors.grey[600], fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

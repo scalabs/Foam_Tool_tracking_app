@@ -1,6 +1,6 @@
+import 'package:alati_app/cubits/maintenance.dart';
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ToolsOverviewScreen extends StatefulWidget {
   const ToolsOverviewScreen({super.key});
@@ -23,7 +23,6 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
   ];
   String selectedFilter = 'All';
 
-  List<String> tools = [];
   int numberOfSections = 22;
   List<String?> addedTools =
       List.generate(22, (index) => null); // Initialize with null
@@ -32,30 +31,7 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
   final List<String> cleanStatusOptions = ['Clean', 'Not Clean'];
   final List<String> calibratedStatusOptions = ['Calibrated', 'Not Calibrated'];
 
-  @override
-  void initState() {
-    fetchData();
-    super.initState();
-  }
-
-  Future<void> fetchData() async {
-    final response = await http.get(
-      Uri.parse('http://127.0.0.1:5000/api/active'),
-      headers: {'Content-Type': 'application/json'},
-    );
-
-    if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
-      setState(() {
-        tools = List<String>.from(data.map((item) => item['Alat']));
-        updateDatabaseEntries();
-      });
-    } else {
-      debugPrint('Failed to load data');
-    }
-  }
-
-  void updateDatabaseEntries() {
+  void updateDatabaseEntries(List<String> tools) {
     // Clear existing databaseEntries and create new ones from API tools
     databaseEntries.clear();
     for (String tool in tools) {
@@ -100,166 +76,189 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        SizedBox(
-          width: 250,
-          child: Column(
+    return BlocBuilder<ToolFetcherCubit, ToolFetcherState>(
+      builder: (context, state) {
+        if (state is ToolsFetcherSuccess) {
+          final tools = state.tools;
+          return Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: DropdownButton<String>(
-                  value: selectedFilter,
-                  onChanged: (String? value) {
-                    setState(() {
-                      selectedFilter = value!;
-                    });
-                  },
-                  items: filterOptions
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+            children: <Widget>[
+              SizedBox(
+                width: 250,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: DropdownButton<String>(
+                        value: selectedFilter,
+                        onChanged: (String? value) {
+                          setState(() {
+                            selectedFilter = value!;
+                          });
+                        },
+                        items: filterOptions
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    Expanded(
+                      child: tools.isNotEmpty
+                          ? ListView.builder(
+                              itemCount: filterDatabaseEntries().length,
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                  title:
+                                      Text(filterDatabaseEntries()[index].tool),
+                                );
+                              },
+                            )
+                          : const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                    ),
+                  ],
                 ),
               ),
+              const VerticalDivider(),
               Expanded(
-                child: tools.isNotEmpty
-                    ? ListView.builder(
-                        itemCount: filterDatabaseEntries().length,
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                            title: Text(filterDatabaseEntries()[index].tool),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    Expanded(
+                      child: DataTable(
+                        columns: const <DataColumn>[
+                          DataColumn(
+                              label: Text('Tool',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold))),
+                          DataColumn(
+                              label: Text('Project',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold))),
+                          DataColumn(
+                              label: Text('Status',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold))),
+                          DataColumn(
+                              label: Text('User Role',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold))),
+                          DataColumn(
+                              label: Text('Clean Status',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold))),
+                          DataColumn(
+                              label: Text('Calibrated Status',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold))),
+                          DataColumn(
+                              label: Text('Date Added',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold))),
+                          DataColumn(
+                              label: Text('Time Elapsed',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold))),
+                          DataColumn(
+                              label: Text('Actions',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold))),
+                        ],
+                        rows: filterDatabaseEntries().map((entry) {
+                          return DataRow(
+                            cells: <DataCell>[
+                              DataCell(Text(entry.tool)),
+                              DataCell(Text(entry.project)),
+                              DataCell(Text(entry.status)),
+                              DataCell(Text(entry.userRole)),
+                              DataCell(Text(entry.cleanStatus)),
+                              DataCell(Text(entry.calibratedStatus)),
+                              DataCell(Text(entry.dateAdded.toString())),
+                              DataCell(
+                                  Text(calculateTimeElapsed(entry.dateAdded))),
+                              DataCell(
+                                IconButton(
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () {
+                                    databaseEntries.remove(entry);
+                                    setState(() {});
+                                  },
+                                ),
+                              ),
+                            ],
                           );
-                        },
-                      )
-                    : const Center(
-                        child: CircularProgressIndicator(),
+                        }).toList(),
                       ),
-              ),
-            ],
-          ),
-        ),
-        const VerticalDivider(),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Expanded(
-                child: DataTable(
-                  columns: const <DataColumn>[
-                    DataColumn(
-                        label: Text('Tool',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('Project',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('Status',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('User Role',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('Clean Status',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('Calibrated Status',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('Date Added',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('Time Elapsed',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold))),
-                    DataColumn(
-                        label: Text('Actions',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold))),
-                  ],
-                  rows: filterDatabaseEntries().map((entry) {
-                    return DataRow(
-                      cells: <DataCell>[
-                        DataCell(Text(entry.tool)),
-                        DataCell(Text(entry.project)),
-                        DataCell(Text(entry.status)),
-                        DataCell(Text(entry.userRole)),
-                        DataCell(Text(entry.cleanStatus)),
-                        DataCell(Text(entry.calibratedStatus)),
-                        DataCell(Text(entry.dateAdded.toString())),
-                        DataCell(Text(calculateTimeElapsed(entry.dateAdded))),
-                        DataCell(
-                          IconButton(
-                            icon: const Icon(Icons.delete),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          TextField(
+                            controller: toolController,
+                            decoration:
+                                const InputDecoration(labelText: 'Tool'),
+                          ),
+                          TextField(
+                            controller: projectController,
+                            decoration:
+                                const InputDecoration(labelText: 'Project'),
+                          ),
+                          ElevatedButton(
                             onPressed: () {
-                              databaseEntries.remove(entry);
+                              DatabaseEntry newEntry = DatabaseEntry(
+                                toolController.text,
+                                projectController.text,
+                                'Active',
+                                'User',
+                                'Clean Status',
+                                'Calibrated Status',
+                                DateTime.now(),
+                                DateTime.now(),
+                              );
+                              databaseEntries.add(newEntry);
+                              toolController.clear();
+                              projectController.clear();
                               setState(() {});
                             },
+                            child: const Text('Add Tool'),
                           ),
-                        ),
-                      ],
-                    );
-                  }).toList(),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    TextField(
-                      controller: toolController,
-                      decoration: const InputDecoration(labelText: 'Tool'),
-                    ),
-                    TextField(
-                      controller: projectController,
-                      decoration: const InputDecoration(labelText: 'Project'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        DatabaseEntry newEntry = DatabaseEntry(
-                          toolController.text,
-                          projectController.text,
-                          'Active',
-                          'User',
-                          'Clean Status',
-                          'Calibrated Status',
-                          DateTime.now(),
-                          DateTime.now(),
-                        );
-                        databaseEntries.add(newEntry);
-                        toolController.clear();
-                        projectController.clear();
-                        setState(() {});
-                      },
-                      child: const Text('Add Tool'),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        databaseEntries[0].status = 'Inactive';
-                        databaseEntries[0].userRole = 'Admin';
-                        setState(() {});
-                      },
-                      child: const Text('Make a Change in Database (Key User)'),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              databaseEntries[0].status = 'Inactive';
+                              databaseEntries[0].userRole = 'Admin';
+                              setState(() {});
+                            },
+                            child: const Text(
+                                'Make a Change in Database (Key User)'),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ],
-          ),
-        ),
-      ],
+          );
+        } else {
+          return const Center(child: CircularProgressIndicator());
+        }
+      },
     );
   }
 

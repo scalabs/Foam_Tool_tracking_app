@@ -5,18 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() {
-  runApp(const FoamApp());
+  runApp(const DebugFoamApp());
 }
 
-class FoamApp extends StatelessWidget {
-  const FoamApp({super.key});
+class DebugFoamApp extends StatelessWidget {
+  const DebugFoamApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return RepositoryProvider(
-      create: (context) => APIToolsService(),
+      create: (context) => FakeToolsService(toolsCount: 22),
       child: BlocProvider(
-        create: (context) => ToolFetcherCubit(context.read<APIToolsService>()),
+        create: (context) => ToolFetcherCubit(context.read<FakeToolsService>()),
         child: MaterialApp(
           home: const DashboardScreen(),
           theme: ThemeData(
