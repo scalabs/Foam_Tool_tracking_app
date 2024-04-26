@@ -316,6 +316,7 @@ class _InnerEditorState extends State<_InnerEditor> {
                         children: [
                           for (int i = 0; i < mornings.length; i++)
                             _ShiftWidget(
+                              toolsInUsage: toolsInUsage,
                               initialValue: mornings[i],
                               label: 'Morning\n(06:00 - 14:00)',
                               onAdd: () {
@@ -336,6 +337,7 @@ class _InnerEditorState extends State<_InnerEditor> {
                         children: [
                           for (int i = 0; i < afternoons.length; i++)
                             _ShiftWidget(
+                              toolsInUsage: toolsInUsage,
                               initialValue: afternoons[i],
                               label: 'Afternoon\n(14:00 - 22:00)',
                               onAdd: () {
@@ -356,6 +358,7 @@ class _InnerEditorState extends State<_InnerEditor> {
                         children: [
                           for (int i = 0; i < nights.length; i++)
                             _ShiftWidget(
+                              toolsInUsage: toolsInUsage,
                               initialValue: nights[i],
                               label: 'Night\n(22:00 - 06:00)',
                               onAdd: () {
@@ -415,6 +418,7 @@ class _DayLegend extends StatelessWidget {
 }
 
 class _ShiftWidget extends StatefulWidget {
+  final int toolsInUsage;
   final bool initialValue;
   final Function onAdd;
   final Function onDelete;
@@ -424,6 +428,7 @@ class _ShiftWidget extends StatefulWidget {
     required this.onAdd,
     required this.onDelete,
     required this.initialValue,
+    required this.toolsInUsage,
   });
   @override
   State<_ShiftWidget> createState() => _ShiftWidgetState();
@@ -431,7 +436,6 @@ class _ShiftWidget extends StatefulWidget {
 
 class _ShiftWidgetState extends State<_ShiftWidget> {
   bool selected = false;
-  final toolsInUsage = Random().nextInt(9).clamp(1, 10);
   @override
   void initState() {
     selected = widget.initialValue;
@@ -478,11 +482,11 @@ class _ShiftWidgetState extends State<_ShiftWidget> {
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 16.0),
-                        child: Text('- ${420 * toolsInUsage} min'),
+                        child: Text('- ${420 * widget.toolsInUsage} min'),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
-                        child: Text('$toolsInUsage tools used'),
+                        child: Text('${widget.toolsInUsage} tools used'),
                       ),
                     ],
                   ),
