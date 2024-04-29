@@ -1,9 +1,9 @@
-import 'package:alati_app/tabs/reports.dart';
+import 'package:alati_app/tabs/reports_overview.dart';
 import 'package:flutter/material.dart';
 import 'package:alati_app/tabs/current_state_overview.dart';
-import 'package:alati_app/tabs/planning.dart';
+import 'package:alati_app/tabs/planning_overview.dart';
 import 'package:alati_app/tabs/tool_overview.dart';
-import 'package:alati_app/tabs/maintenance.dart';
+import 'package:alati_app/tabs/maintenance_overview.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
