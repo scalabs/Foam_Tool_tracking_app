@@ -82,20 +82,11 @@ class FakeToolsService implements ToolsService {
   }
 
   @override
-  Future<void> addData(String tool, String filter) {
-    // TODO: implement addData
-    throw UnimplementedError();
-  }
+  Future<void> addData(String tool, String filter) => Future.value();
 
   @override
-  Future<void> deleteData(String tool, String filter) {
-    // TODO: implement deleteData
-    throw UnimplementedError();
-  }
+  Future<void> deleteData(String tool, String filter) => Future.value();
 
   @override
-  Future<void> updateData(String tool, String filter) {
-    // TODO: implement updateData
-    throw UnimplementedError();
-  }
+  Future<void> updateData(String tool, String filter) => Future.value();
 }
