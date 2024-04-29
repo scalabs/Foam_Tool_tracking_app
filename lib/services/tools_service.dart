@@ -4,6 +4,9 @@ import 'package:http/http.dart' as http;
 
 abstract class ToolsService {
   Future<List<String>> fetchData(String selectedFilter);
+  Future<void> addData(String tool, String filter);
+  Future<void> updateData(String tool, String filter);
+  Future<void> deleteData(String tool, String filter);
 }
 
 class APIToolsService implements ToolsService {
@@ -45,6 +48,23 @@ class APIToolsService implements ToolsService {
       throw Exception('Failed to load data');
     }
   }
+
+  Future<void> addData(String tool, String filter) {
+    // TODO: implement addData
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> deleteData(String tool, String filter) {
+    // TODO: implement deleteData
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> updateData(String tool, String filter) {
+    // TODO: implement updateData
+    throw UnimplementedError();
+  }
 }
 
 class FakeToolsService implements ToolsService {
@@ -59,5 +79,23 @@ class FakeToolsService implements ToolsService {
         (index) => 'Tool ${index + 1}',
       ),
     );
+  }
+
+  @override
+  Future<void> addData(String tool, String filter) {
+    // TODO: implement addData
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> deleteData(String tool, String filter) {
+    // TODO: implement deleteData
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> updateData(String tool, String filter) {
+    // TODO: implement updateData
+    throw UnimplementedError();
   }
 }
