@@ -5,11 +5,13 @@ import 'package:http/http.dart' as http;
 abstract class ToolsService {
   Future<List<String>> fetchData(String selectedFilter);
   Future<void> addData(String tool, String filter);
-  Future<void> updateData(String tool, String filter);
+  // TODO determine, if this is necessary: Future<void> updateData(String tool, String filter);
   Future<void> deleteData(String tool, String filter);
 }
 
 class APIToolsService implements ToolsService {
+  static const apiBaseUrl = 'http://127.0.0.1:5000/api/';
+
   @override
   Future<List<String>> fetchData(String selectedFilter) async {
     String filterEndpoint = '';
@@ -32,8 +34,8 @@ class APIToolsService implements ToolsService {
     }
 
     final apiUrl = filterEndpoint.isNotEmpty
-        ? 'http://127.0.0.1:5000/api/$filterEndpoint'
-        : 'http://127.0.0.1:5000/api/active';
+        ? '$apiBaseUrl$filterEndpoint'
+        : '${apiBaseUrl}active';
 
     final response = await http.get(
       Uri.parse(apiUrl),
@@ -49,21 +51,28 @@ class APIToolsService implements ToolsService {
     }
   }
 
-  Future<void> addData(String tool, String filter) {
-    // TODO: implement addData
-    throw UnimplementedError();
+  @override
+  Future<void> addData(String tool, String filter) async {
+    const apiUrl = '${apiBaseUrl}active';
+    await http.post(
+      Uri.parse(apiUrl),
+      body: jsonEncode({
+        'tool': tool,
+        'filter': filter,
+      }),
+    );
   }
 
   @override
-  Future<void> deleteData(String tool, String filter) {
-    // TODO: implement deleteData
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> updateData(String tool, String filter) {
-    // TODO: implement updateData
-    throw UnimplementedError();
+  Future<void> deleteData(String tool, String filter) async {
+    const apiUrl = '${apiBaseUrl}active';
+    await http.delete(
+      Uri.parse(apiUrl),
+      body: jsonEncode({
+        'tool': tool,
+        'filter': filter,
+      }),
+    );
   }
 }
 
@@ -87,6 +96,6 @@ class FakeToolsService implements ToolsService {
   @override
   Future<void> deleteData(String tool, String filter) => Future.value();
 
-  @override
-  Future<void> updateData(String tool, String filter) => Future.value();
+  // @override
+  // Future<void> updateData(String tool, String filter) => Future.value();
 }
