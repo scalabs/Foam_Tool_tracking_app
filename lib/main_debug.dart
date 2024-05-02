@@ -42,6 +42,7 @@ class DebugFoamApp extends StatelessWidget {
                 start: DateTime(2024, 1, 23),
                 end: DateTime(2024, 1, 28),
                 label: 'CW04',
+                number: 4,
               ),
               service: context.read<FakePlanningService>(),
             ),

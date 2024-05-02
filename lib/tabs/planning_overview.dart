@@ -1,6 +1,8 @@
 import 'dart:math';
+import 'package:alati_app/cubits/planning_cubit.dart';
 import 'package:alati_app/cubits/tool_selection_cubit.dart';
 import 'package:alati_app/models/tool_model.dart';
+import 'package:alati_app/models/weekly_planning_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '/models/week_of_the_year.dart';
@@ -22,6 +24,7 @@ class _PlanningScreenState extends State<PlanningScreen> {
       start: DateTime(2024, 1, 23),
       end: DateTime(2024, 1, 28),
       label: 'CW04',
+      number: 4,
     );
     super.initState();
   }
@@ -54,29 +57,35 @@ class WeekEditorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blue[400],
-        title: Text('Review Orders: $assyLineLabel'),
-        actions: const [
-          // if (revIndicator) RevisionSelectionWidget(),
-          // if (weekIndicator) WeekSelectionWidget(onChanged: (state) {})
-        ],
-      ),
-      body: _InnerEditor(
-        cycleTime: '250',
-        unitsOrdered: (Random().nextDouble() * 1000).toInt(),
+      body:
+          BlocSelector<PlanningCubit, PlanningState, List<WeeklyPlanningModel>>(
+        selector: (state) {
+          return state is PlanningSuccess ? state.models : [];
+        },
+        builder: (context, state) {
+          final model =
+              state.isEmpty ? null : state.first; // TODO select model by week
+          return _InnerEditor(
+            model: model,
+            cycleTime: model?.targetedCycleTime.toStringAsFixed(0) ?? '250',
+            unitsOrdered:
+                model?.orderedUnits ?? (Random().nextDouble() * 1000).toInt(),
+          );
+        },
       ),
     );
   }
 }
 
 class _InnerEditor extends StatefulWidget {
+  final WeeklyPlanningModel? model;
   final int unitsOrdered;
   final String cycleTime;
 
   const _InnerEditor({
     required this.unitsOrdered,
     required this.cycleTime,
+    required this.model,
   });
 
   @override
@@ -129,6 +138,27 @@ class _InnerEditorState extends State<_InnerEditor> {
     debugPrint('$totalProductionMinutesNeeded');
   }
 
+  _saveShiftAssignment(BuildContext context, int toolsInUsage) {
+    final cubit = context.read<PlanningCubit>();
+    final selectedWeek = cubit.selectedWeek;
+    final model = WeeklyPlanningModel(
+      shifts: [
+        mornings,
+        afternoons,
+        nights,
+      ],
+      adjustedCycleTime: adjustedCycleTime,
+      adjustedUnitsOrdered: adjustedUnitsOrdered,
+      calendarWeek: selectedWeek.number,
+      calendarYear: selectedWeek.start.year,
+      orderedUnits: unitsOrdered,
+      targetedCycleTime: targetedCycleTime,
+      toolsInUsage: toolsInUsage,
+      id: -1,
+    );
+    cubit.addPlanning(model);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ToolSelectionCubit, List<Tool?>>(
@@ -136,249 +166,272 @@ class _InnerEditorState extends State<_InnerEditor> {
         final toolsInUsage =
             selectedTools.where((el) => el != null).length.clamp(1, 40);
 
-        return SingleChildScrollView(
-            child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+        return Column(
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: SizedBox(
-                        width: 450,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 16.0),
-                                child: Text(
-                                  'Production Details',
-                                  style: TextStyle(
-                                      color: Colors.blue[400],
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              ListTile(
-                                title: const Text(
-                                  'Tools in usage [num]',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: const Text(
-                                    'Parallelization of production '),
-                                trailing: Text(
-                                  '$toolsInUsage',
-                                ),
-                              ),
-                              const Divider(),
-                              ListTile(
-                                title:
-                                    const Text('Adjusted ordered units [pcs]'),
-                                trailing: SizedBox(
-                                  width: 100,
-                                  child: TextField(
-                                    textAlign: TextAlign.right,
-                                    controller: unitsController,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                      decimal: false,
-                                      signed: false,
+            ListTile(
+              trailing: ElevatedButton.icon(
+                onPressed: () {
+                  _saveShiftAssignment(context, toolsInUsage);
+                },
+                icon: const Icon(Icons.cloud_upload_outlined),
+                label: const Text('Save Shift Allocation'),
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                  child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SizedBox(
+                              width: 450,
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 16.0),
+                                      child: Text(
+                                        'Production Details',
+                                        style: TextStyle(
+                                            color: Colors.blue[400],
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold),
+                                      ),
                                     ),
-                                    onChanged: (text) {
-                                      setState(() {
-                                        adjustedUnitsOrdered =
-                                            int.tryParse(text) ?? unitsOrdered;
-                                        debugPrint('');
-                                        _refreshProdMinuted();
-                                      });
-                                    },
-                                  ),
-                                ),
-                              ),
-                              ListTile(
-                                title: const Text('Targeted cycle time [sec]'),
-                                trailing: Text('$targetedCycleTime'),
-                              ),
-                              ListTile(
-                                title: const Text('Adjusted cycle time [sec]'),
-                                trailing: SizedBox(
-                                  width: 100,
-                                  child: TextField(
-                                    textAlign: TextAlign.right,
-                                    controller: controller,
-                                    keyboardType:
-                                        const TextInputType.numberWithOptions(
-                                      decimal: false,
-                                      signed: false,
+                                    ListTile(
+                                      title: const Text(
+                                        'Tools in usage [num]',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      subtitle: const Text(
+                                          'Parallelization of production '),
+                                      trailing: Text(
+                                        '$toolsInUsage',
+                                      ),
                                     ),
-                                    onChanged: (text) {
-                                      setState(() {
-                                        adjustedCycleTime =
-                                            int.tryParse(text) ??
-                                                targetedCycleTime;
-                                        debugPrint('');
-                                        _refreshProdMinuted();
-                                      });
-                                    },
-                                  ),
+                                    const Divider(),
+                                    ListTile(
+                                      title: const Text(
+                                          'Adjusted ordered units [pcs]'),
+                                      trailing: SizedBox(
+                                        width: 100,
+                                        child: TextField(
+                                          textAlign: TextAlign.right,
+                                          controller: unitsController,
+                                          keyboardType: const TextInputType
+                                              .numberWithOptions(
+                                            decimal: false,
+                                            signed: false,
+                                          ),
+                                          onChanged: (text) {
+                                            setState(() {
+                                              adjustedUnitsOrdered =
+                                                  int.tryParse(text) ??
+                                                      unitsOrdered;
+                                              debugPrint('');
+                                              _refreshProdMinuted();
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    ListTile(
+                                      title: const Text(
+                                          'Targeted cycle time [sec]'),
+                                      trailing: Text('$targetedCycleTime'),
+                                    ),
+                                    ListTile(
+                                      title: const Text(
+                                          'Adjusted cycle time [sec]'),
+                                      trailing: SizedBox(
+                                        width: 100,
+                                        child: TextField(
+                                          textAlign: TextAlign.right,
+                                          controller: controller,
+                                          keyboardType: const TextInputType
+                                              .numberWithOptions(
+                                            decimal: false,
+                                            signed: false,
+                                          ),
+                                          onChanged: (text) {
+                                            setState(() {
+                                              adjustedCycleTime =
+                                                  int.tryParse(text) ??
+                                                      targetedCycleTime;
+                                              debugPrint('');
+                                              _refreshProdMinuted();
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    ListTile(
+                                      title: const Text(
+                                          'Total time needed (target) [mins]'),
+                                      trailing: Text(
+                                          '${(adjustedUnitsOrdered * (targetedCycleTime / 60)) ~/ toolsInUsage}'),
+                                    ),
+                                    ListTile(
+                                      title: const Text(
+                                        'Total time needed (actual) [mins]',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      trailing: Text(
+                                          '${totalProductionMinutesNeeded ~/ toolsInUsage} '),
+                                    ),
+                                    const Divider(),
+                                    ListTile(
+                                      leading: (_shiftCounter * 420 >=
+                                              (totalProductionMinutesNeeded -
+                                                  60))
+                                          ? const Icon(
+                                              Icons.check,
+                                              color: Colors.green,
+                                            )
+                                          : const Icon(Icons.warning,
+                                              color: Colors.orange),
+                                      title: const Text(
+                                        'Planned time [mins]',
+                                        style: TextStyle(color: Colors.green),
+                                      ),
+                                      trailing: Text('${_shiftCounter * 420}'),
+                                    ),
+                                    ListTile(
+                                      leading: ((totalProductionMinutesNeeded -
+                                                  _shiftCounter * 420) <=
+                                              60)
+                                          ? const Icon(
+                                              Icons.check,
+                                              color: Colors.green,
+                                            )
+                                          : const Icon(Icons.warning,
+                                              color: Colors.orange),
+                                      title: const Text(
+                                        'Remaining time [mins]',
+                                        style: TextStyle(color: Colors.red),
+                                      ),
+                                      trailing: Text(
+                                          '${totalProductionMinutesNeeded - _shiftCounter * 420}'),
+                                    ),
+                                    const Divider(),
+                                    const ListTile(
+                                      title: Text('Update in database'),
+                                      leading: Icon(Icons.done),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              ListTile(
-                                title: const Text(
-                                    'Total time needed (target) [mins]'),
-                                trailing: Text(
-                                    '${(adjustedUnitsOrdered * (targetedCycleTime / 60)) ~/ toolsInUsage}'),
-                              ),
-                              ListTile(
-                                title: const Text(
-                                  'Total time needed (actual) [mins]',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                trailing: Text(
-                                    '${totalProductionMinutesNeeded ~/ toolsInUsage} '),
-                              ),
-                              const Divider(),
-                              ListTile(
-                                leading: (_shiftCounter * 420 >=
-                                        (totalProductionMinutesNeeded - 60))
-                                    ? const Icon(
-                                        Icons.check,
-                                        color: Colors.green,
-                                      )
-                                    : const Icon(Icons.warning,
-                                        color: Colors.orange),
-                                title: const Text(
-                                  'Planned time [mins]',
-                                  style: TextStyle(color: Colors.green),
-                                ),
-                                trailing: Text('${_shiftCounter * 420}'),
-                              ),
-                              ListTile(
-                                leading: ((totalProductionMinutesNeeded -
-                                            _shiftCounter * 420) <=
-                                        60)
-                                    ? const Icon(
-                                        Icons.check,
-                                        color: Colors.green,
-                                      )
-                                    : const Icon(Icons.warning,
-                                        color: Colors.orange),
-                                title: const Text(
-                                  'Remaining time [mins]',
-                                  style: TextStyle(color: Colors.red),
-                                ),
-                                trailing: Text(
-                                    '${totalProductionMinutesNeeded - _shiftCounter * 420}'),
-                              ),
-                              const Divider(),
-                              const ListTile(
-                                title: Text('Update in database'),
-                                leading: Icon(Icons.done),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      const Padding(
-                        padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      Expanded(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            _DayLegend(label: 'Mon'),
-                            _DayLegend(label: 'Tue'),
-                            _DayLegend(label: 'Wed'),
-                            _DayLegend(label: 'Thu'),
-                            _DayLegend(label: 'Fri'),
-                            _DayLegend(label: 'Sat'),
-                            _DayLegend(label: 'Sun'),
+                            const Padding(
+                              padding: EdgeInsets.only(top: 8.0, bottom: 8.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.max,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  _DayLegend(label: 'Mon'),
+                                  _DayLegend(label: 'Tue'),
+                                  _DayLegend(label: 'Wed'),
+                                  _DayLegend(label: 'Thu'),
+                                  _DayLegend(label: 'Fri'),
+                                  _DayLegend(label: 'Sat'),
+                                  _DayLegend(label: 'Sun'),
+                                ],
+                              ),
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                for (int i = 0; i < mornings.length; i++)
+                                  _ShiftWidget(
+                                    toolsInUsage: toolsInUsage,
+                                    initialValue: mornings[i],
+                                    label: 'Morning\n(06:00 - 14:00)',
+                                    onAdd: () {
+                                      mornings[i] = true;
+                                      _onAdd();
+                                    },
+                                    onDelete: () {
+                                      mornings[i] = false;
+                                      _onDelete();
+                                    },
+                                  ),
+                              ],
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                for (int i = 0; i < afternoons.length; i++)
+                                  _ShiftWidget(
+                                    toolsInUsage: toolsInUsage,
+                                    initialValue: afternoons[i],
+                                    label: 'Afternoon\n(14:00 - 22:00)',
+                                    onAdd: () {
+                                      afternoons[i] = true;
+                                      _onAdd();
+                                    },
+                                    onDelete: () {
+                                      afternoons[i] = false;
+                                      _onDelete();
+                                    },
+                                  ),
+                              ],
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                for (int i = 0; i < nights.length; i++)
+                                  _ShiftWidget(
+                                    toolsInUsage: toolsInUsage,
+                                    initialValue: nights[i],
+                                    label: 'Night\n(22:00 - 06:00)',
+                                    onAdd: () {
+                                      nights[i] = true;
+                                      _onAdd();
+                                    },
+                                    onDelete: () {
+                                      nights[i] = false;
+                                      _onDelete();
+                                    },
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
                       ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          for (int i = 0; i < mornings.length; i++)
-                            _ShiftWidget(
-                              toolsInUsage: toolsInUsage,
-                              initialValue: mornings[i],
-                              label: 'Morning\n(06:00 - 14:00)',
-                              onAdd: () {
-                                mornings[i] = true;
-                                _onAdd();
-                              },
-                              onDelete: () {
-                                mornings[i] = false;
-                                _onDelete();
-                              },
-                            ),
-                        ],
-                      ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          for (int i = 0; i < afternoons.length; i++)
-                            _ShiftWidget(
-                              toolsInUsage: toolsInUsage,
-                              initialValue: afternoons[i],
-                              label: 'Afternoon\n(14:00 - 22:00)',
-                              onAdd: () {
-                                afternoons[i] = true;
-                                _onAdd();
-                              },
-                              onDelete: () {
-                                afternoons[i] = false;
-                                _onDelete();
-                              },
-                            ),
-                        ],
-                      ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          for (int i = 0; i < nights.length; i++)
-                            _ShiftWidget(
-                              toolsInUsage: toolsInUsage,
-                              initialValue: nights[i],
-                              label: 'Night\n(22:00 - 06:00)',
-                              onAdd: () {
-                                nights[i] = true;
-                                _onAdd();
-                              },
-                              onDelete: () {
-                                nights[i] = false;
-                                _onDelete();
-                              },
-                            ),
-                        ],
-                      ),
                     ],
                   ),
-                ),
-              ],
+                ],
+              )),
             ),
           ],
-        ));
+        );
       },
     );
   }
