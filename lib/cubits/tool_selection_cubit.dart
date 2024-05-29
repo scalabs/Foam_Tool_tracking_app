@@ -2,29 +2,45 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '/models/tool_model.dart';
 
 class ToolSelectionCubit extends Cubit<List<Tool?>> {
-  ToolSelectionCubit() : super(List.generate(22, (index) => null));
+  ToolSelectionCubit() : super(List<Tool?>.filled(22, null));
 
-  void addTool(int index, String toolLabel) {
-    state[index] = Tool(
-      toolLabel,
-      '',
+  void addTool(int index, String toolName) {
+    final updatedTools = List<Tool?>.from(state);
+    updatedTools[index] = Tool(
+      toolName,//added this for emails
+      'Available',
+      DateTime.now(), // Pass the current date and time as the dateAdded
+      rotationAngle: 0, // Set rotation angle to 0 initially
     );
-    emit(List.from(state));
+    emit(updatedTools);
   }
 
   void removeTool(int index) {
-    state.removeAt(index);
-    emit(List.from(state));
+    final updatedTools = List<Tool?>.from(state);
+    if (updatedTools[index] != null) {
+      updatedTools[index]!.rotationAngle = 0; // Reset rotation angle before removing the tool
+    }
+    updatedTools[index] = null;
+    emit(updatedTools);
   }
 
-  void resizeTable(int size) {
-    final newTable = List.generate(size, (index) {
-      if (index < state.length) {
-        return state[index];
-      } else {
-        return null;
+  void resizeTable(int newSize) {
+    final updatedTools = List<Tool?>.from(state);
+    if (newSize > updatedTools.length) {
+      updatedTools.addAll(List<Tool?>.filled(newSize - updatedTools.length, null));
+    } else if (newSize < updatedTools.length) {
+      updatedTools.removeRange(newSize, updatedTools.length);
+    }
+    emit(updatedTools);
+  }
+
+  void updateRotationAngle(double delta) {
+    final updatedTools = List<Tool?>.from(state);
+    for (var tool in updatedTools) {
+      if (tool != null) {
+        tool.rotationAngle += delta;
       }
-    });
-    emit(newTable);
+    }
+    emit(updatedTools);
   }
 }

@@ -3,7 +3,8 @@ from flask_cors import CORS  # Import CORS from flask_cors
 import pyodbc
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "http://10.3.41.24"}})
+
 
 # Replace these with your actual SQL Server credentials
 server = "127.0.0.1"

@@ -42,6 +42,43 @@ def handle_weekly_shifts():
             return jsonify({'message': 'Data added successfully'})
         else:
             return jsonify({'error': 'Incomplete data provided'}), 400
- 
+
+@app.route('/api/weekly_shifts/<int:id>', methods=['PUT'])
+def update_weekly_shift(id):
+    data = request.get_json()
+    tools_in_usage = data.get('ToolsInUsage')
+    calendar_week = data.get('CalendarWeek')
+    calendar_year = data.get('CalendarYear')
+    ordered_units = data.get('OrderedUnits')
+    adjusted_units_ordered = data.get('AdjustedUnitsOrdered')
+    targeted_cycle_time = data.get('TargetedCycleTime')
+    adjusted_cycle_time = data.get('AdjustedCycleTime')
+    json_data = data.get('JsonData')
+    
+    if not (tools_in_usage and calendar_week and calendar_year and ordered_units and adjusted_units_ordered and targeted_cycle_time and adjusted_cycle_time and json_data):
+        return jsonify({'error': 'Incomplete data provided'}), 400
+    
+    cursor.execute("""
+        UPDATE [Foam_tools].[dbo].[weekly_shifts]
+        SET ToolsInUsage = ?,
+            CalendarWeek = ?,
+            CalendarYear = ?,
+            OrderedUnits = ?,
+            AdjustedUnitsOrdered = ?,
+            TargetedCycleTime = ?,
+            AdjustedCycleTime = ?,
+            JsonData = ?
+        WHERE ID = ?
+        """, (tools_in_usage, calendar_week, calendar_year, ordered_units, adjusted_units_ordered, targeted_cycle_time, adjusted_cycle_time, json_data, id))
+    
+    conn.commit()
+    return jsonify({'message': 'Data updated successfully'}), 200
+
+@app.route('/api/weekly_shifts/<int:id>', methods=['DELETE'])
+def delete_weekly_shift(id):
+    cursor.execute("DELETE FROM [Foam_tools].[dbo].[weekly_shifts] WHERE ID = ?", (id,))
+    conn.commit()
+    return jsonify({'message': 'Data deleted successfully'}), 200
+
 if __name__ == '__main__':
     app.run(debug=True)
