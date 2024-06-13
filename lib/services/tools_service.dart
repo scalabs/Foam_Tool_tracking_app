@@ -1,11 +1,10 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 abstract class ToolsService {
   Future<List<String>> fetchData(String selectedFilter);
   Future<void> addData(String tool, String filter);
-  // TODO determine, if this is necessary: Future<void> updateData(String tool, String filter);
   Future<void> deleteData(String tool, String filter);
 }
 
@@ -14,7 +13,7 @@ class APIToolsService implements ToolsService {
 
   @override
   Future<List<String>> fetchData(String selectedFilter) async {
-    String filterEndpoint = '';
+    String filterEndpoint;
     switch (selectedFilter) {
       case 'Tools Cleaned':
         filterEndpoint = 'cleaned';
@@ -30,23 +29,27 @@ class APIToolsService implements ToolsService {
         break;
       default:
         // Fetch all tools if no filter is selected
+        filterEndpoint = 'active';
         break;
     }
 
-    final apiUrl = filterEndpoint.isNotEmpty
-        ? '$apiBaseUrl$filterEndpoint'
-        : '${apiBaseUrl}active';
+    final apiUrl = '$apiBaseUrl$filterEndpoint';
 
-    final response = await http.get(
-      Uri.parse(apiUrl),
-      headers: {'Content-Type': 'application/json'},
-    );
+    try {
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+      );
 
-    if (response.statusCode == 200) {
-      List<dynamic> data = json.decode(response.body);
-
-      return List<String>.from(data.map((item) => item['Alat']));
-    } else {
+      if (response.statusCode == 200) {
+        List<dynamic> data = json.decode(response.body);
+        debugPrint('Fetched data: $data');
+        return List<String>.from(data.map((item) => item['Alat']));
+      } else {
+        throw Exception('Failed to load data: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error fetching data: $e');
       throw Exception('Failed to load data');
     }
   }
@@ -60,6 +63,7 @@ class APIToolsService implements ToolsService {
         'tool': tool,
         'filter': filter,
       }),
+      headers: {'Content-Type': 'application/json'},
     );
   }
 
@@ -72,6 +76,7 @@ class APIToolsService implements ToolsService {
         'tool': tool,
         'filter': filter,
       }),
+      headers: {'Content-Type': 'application/json'},
     );
   }
 }
@@ -95,7 +100,4 @@ class FakeToolsService implements ToolsService {
 
   @override
   Future<void> deleteData(String tool, String filter) => Future.value();
-
-  // @override
-  // Future<void> updateData(String tool, String filter) => Future.value();
 }

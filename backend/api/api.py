@@ -3,7 +3,9 @@ from flask_cors import CORS  # Import CORS from flask_cors
 import pyodbc
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "http://10.3.41.24"}})
+#za live CORS(app, resources={r"/api/*": {"origins": "http://10.3.41.24"}})
+CORS(app, resources={r"/api/*": {"origins": "127.0.0.1"}})
+#CORS(app)
 
 
 # Replace these with your actual SQL Server credentials
@@ -38,13 +40,37 @@ def handle_active():
 
     elif request.method == "POST":
         data = request.get_json()
-        # Add logic to handle the POST request if needed
-        return jsonify({"message": "POST request received"})
+        tool_name = data.get('tool')  # Assuming the key for tool name is 'tool'
+
+        # Insert new tool into the Active table
+        insert_query = """
+            INSERT INTO [Foam_tools].[dbo].[Active] ([Alat])
+            VALUES (?)
+        """
+        try:
+            cursor.execute(insert_query, (tool_name,))
+            conn.commit()
+            return jsonify({"message": "Tool added successfully"})
+        except Exception as e:
+            conn.rollback()
+            return jsonify({"error": str(e)}), 500
 
     elif request.method == "DELETE":
         data = request.get_json()
-        # Add logic to handle the DELETE request if needed
-        return jsonify({"message": "DELETE request received"})
+        tool_name = data.get('tool')  # Assuming the key for tool name is 'tool'
+
+        # Delete tool from the Active table
+        delete_query = """
+            DELETE FROM [Foam_tools].[dbo].[Active]
+            WHERE [Alat] = ?
+        """
+        try:
+            cursor.execute(delete_query, (tool_name,))
+            conn.commit()
+            return jsonify({"message": "Tool deleted successfully"})
+        except Exception as e:
+            conn.rollback()
+            return jsonify({"error": str(e)}), 500
 
 
 # Route for /api/karijeri
