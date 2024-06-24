@@ -6,11 +6,13 @@ class ToolSelectionCubit extends Cubit<List<Tool?>> {
 
   void addTool(int index, String toolName) {
     final updatedTools = List<Tool?>.from(state);
+
+    var angle = (index + 0.5) / 22 * (360);
     updatedTools[index] = Tool(
-      toolName,//added this for emails
+      toolName, //added this for emails
       'Available',
       DateTime.now(), // Pass the current date and time as the dateAdded
-      rotationAngle: 0, // Set rotation angle to 0 initially
+      rotationAngle: angle, // Set rotation angle to 0 initially
     );
     emit(updatedTools);
   }
@@ -18,7 +20,8 @@ class ToolSelectionCubit extends Cubit<List<Tool?>> {
   void removeTool(int index) {
     final updatedTools = List<Tool?>.from(state);
     if (updatedTools[index] != null) {
-      updatedTools[index]!.rotationAngle = 0; // Reset rotation angle before removing the tool
+      updatedTools[index]!.rotationAngle =
+          0; // Reset rotation angle before removing the tool
     }
     updatedTools[index] = null;
     emit(updatedTools);
@@ -27,7 +30,8 @@ class ToolSelectionCubit extends Cubit<List<Tool?>> {
   void resizeTable(int newSize) {
     final updatedTools = List<Tool?>.from(state);
     if (newSize > updatedTools.length) {
-      updatedTools.addAll(List<Tool?>.filled(newSize - updatedTools.length, null));
+      updatedTools
+          .addAll(List<Tool?>.filled(newSize - updatedTools.length, null));
     } else if (newSize < updatedTools.length) {
       updatedTools.removeRange(newSize, updatedTools.length);
     }
@@ -43,4 +47,8 @@ class ToolSelectionCubit extends Cubit<List<Tool?>> {
     }
     emit(updatedTools);
   }
+
+  void selectNextTool(int itemCount) {}
+
+  void selectPreviousTool(int itemCount) {}
 }

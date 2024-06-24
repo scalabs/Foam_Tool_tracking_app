@@ -2,36 +2,36 @@ import 'package:alati_app/services/tools_service.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-abstract class ToolFetcherState {}
+abstract class FetcherState {}
 
-class ToolsFetcherSuccess extends ToolFetcherState {
-  final List<String> tools;
+class FetcherSuccess extends FetcherState {
+  final List<String> items;
 
-  ToolsFetcherSuccess({required this.tools});
+  FetcherSuccess({required this.items});
 }
 
-class ToolsFetcherLoading extends ToolFetcherState {}
+class FetcherLoading extends FetcherState {}
 
-class ToolsFetcherError extends ToolFetcherState {
+class FetcherError extends FetcherState {
   final String message;
 
-  ToolsFetcherError({required this.message});
+  FetcherError({required this.message});
 }
 
-class ToolFetcherCubit extends Cubit<ToolFetcherState> {
+class ToolFetcherCubit extends Cubit<FetcherState> {
   final ToolsService service;
-  ToolFetcherCubit(this.service) : super(ToolsFetcherLoading()) {
+  ToolFetcherCubit(this.service) : super(FetcherLoading()) {
     fetchData('');
   }
 
   Future<void> fetchData(String selectedFilter) async {
     try {
-      emit(ToolsFetcherLoading());
+      emit(FetcherLoading());
       final resp = await service.fetchData(selectedFilter);
-      emit(ToolsFetcherSuccess(tools: resp));
+      emit(FetcherSuccess(items: resp));
     } catch (e) {
       debugPrint(e.toString());
-      emit(ToolsFetcherError(message: e.toString()));
+      emit(FetcherError(message: e.toString()));
     }
   }
 }

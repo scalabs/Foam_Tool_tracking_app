@@ -1,14 +1,21 @@
 import 'dart:math';
+import 'package:alati_app/cubits/carrier_fetcher_cubit.dart';
+import 'package:alati_app/cubits/carrier_selection_cubit.dart';
 import 'package:alati_app/cubits/tool_fetcher_cubit.dart';
 import 'package:alati_app/cubits/tool_selection_cubit.dart';
+import 'package:alati_app/models/carrier_model.dart';
 import 'package:alati_app/models/tool_model.dart';
+import 'package:alati_app/services/carrier_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+String only(String string, int max) =>
+    max >= (string.length - 1) ? string : string.substring(0, max);
+
 class MaintenanceScreen extends StatefulWidget {
-  const MaintenanceScreen({Key? key}) : super(key: key);
+  const MaintenanceScreen({super.key});
 
   @override
   State<MaintenanceScreen> createState() => _MaintenanceScreenState();
@@ -26,6 +33,11 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   String selectedFilter = 'All';
   final TextEditingController _controller = TextEditingController();
   late SharedPreferences prefs;
+
+  bool showTools = true; // State to toggle between tools and carriers
+  CarriersService apiService = APICarriersService();
+
+  double rotation = 0;
 
   @override
   void initState() {
@@ -48,21 +60,56 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ToolSelectionCubit, List<Tool?>>(
-      builder: (context, state) {
-        return GestureDetector(
-          onPanUpdate: (details) {
-            setState(() {
-              context.read<ToolSelectionCubit>().updateRotationAngle(details.delta.dx);
-            });
+      builder: (context, toolState) {
+        return BlocBuilder<CarrierSelectionCubit, List<Carrier?>>(
+          builder: (context, carrierState) {
+            return Scaffold(
+              key: UniqueKey(),
+              body: GestureDetector(
+                onPanUpdate: (details) {
+                  setState(() {
+                    if (showTools) {
+                      context
+                          .read<ToolSelectionCubit>()
+                          .updateRotationAngle(details.delta.dx);
+                    } else {
+                      context
+                          .read<CarrierSelectionCubit>()
+                          .updateRotationAngle(details.delta.dx);
+                    }
+                  });
+                },
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    _buildFilterColumn(context),
+                    const SizedBox(
+                      width: 16,
+                    ), // Added space between column and pie chart
+                    showTools
+                        ? _buildPieChart(context, toolState, true)
+                        : _buildPieChart(context, carrierState, false),
+                  ],
+                ),
+              ),
+              floatingActionButton: FloatingActionButton(
+                onPressed: () {
+                  setState(() {
+                    showTools = !showTools;
+                  });
+                  if (showTools) {
+                    context.read<ToolFetcherCubit>().fetchData(selectedFilter);
+                  } else {
+                    context
+                        .read<CarrierFetcherCubit>()
+                        .fetchData(selectedFilter);
+                  }
+                },
+                tooltip: showTools ? 'Switch to Carriers' : 'Switch to Tools',
+                child: Icon(showTools ? Icons.build : Icons.local_shipping),
+              ),
+            );
           },
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _buildFilterColumn(context),
-              const SizedBox(width: 16), // Added space between column and pie chart
-              _buildPieChart(context, state),
-            ],
-          ),
         );
       },
     );
@@ -75,7 +122,11 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
         const SizedBox(height: 8),
         _buildFilterDropdown(context),
         const SizedBox(height: 16),
-        _buildToolList(context),
+        if (showTools)
+          _buildToolList(context, context.read<ToolFetcherCubit>()),
+        if (!showTools)
+          _buildToolList<CarrierFetcherCubit>(
+              context, context.read<CarrierFetcherCubit>()),
       ],
     );
   }
@@ -104,8 +155,12 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
           onChanged: (String? value) {
             setState(() {
               selectedFilter = value!;
-              context.read<ToolFetcherCubit>().fetchData(selectedFilter);
             });
+            if (showTools) {
+              context.read<ToolFetcherCubit>().fetchData(selectedFilter);
+            } else {
+              context.read<CarrierFetcherCubit>().fetchData(selectedFilter);
+            }
           },
           items: filterOptions.map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
@@ -118,14 +173,15 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     );
   }
 
-  Widget _buildToolList(BuildContext context) {
+  Widget _buildToolList<T>(BuildContext context, Cubit c) {
     return SizedBox(
       height: 800,
       width: 200,
-      child: BlocBuilder<ToolFetcherCubit, ToolFetcherState>(
+      child: BlocBuilder(
+        bloc: c,
         builder: (context, fetcherState) {
-          if (fetcherState is ToolsFetcherSuccess) {
-            final tools = fetcherState.tools;
+          if (fetcherState is FetcherSuccess) {
+            final tools = fetcherState.items;
             if (tools.isNotEmpty) {
               return ListView.builder(
                 itemCount: tools.length,
@@ -133,7 +189,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                   return ListTile(
                     title: Text(tools[index]),
                     onTap: () {
-                      showAddToolDialog(context, index, tools);
+                      showAddToolDialog(context, index, tools.cast<String>());
                     },
                   );
                 },
@@ -151,7 +207,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     );
   }
 
-  Widget _buildPieChart(BuildContext context, List<Tool?> state) {
+  Widget _buildPieChart(
+      BuildContext context, List<dynamic> state, bool isTool) {
     return Expanded(
       child: InteractiveViewer(
         child: Stack(
@@ -159,82 +216,121 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
             Center(
               child: Text(
                 _controller.text,
-                style: Theme.of(context).textTheme.headline6,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
             LayoutBuilder(builder: (context, constraints) {
               final size = constraints.maxWidth - 1065;
               return Center(
-                child: SizedBox(
-                  width: size,
-                  height: size,
-                  child: GestureDetector(
-                    onTap: () {},
-                    child: Stack(
-                      children: [
-                        _buildPieChartSections(context, state, size),
-                      ],
-                    ),
+                  child: SizedBox(
+                width: size,
+                height: size,
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Stack(
+                    children: [
+                      _buildPieChartSections(context, state, size, isTool),
+                    ],
                   ),
                 ),
-              );
+              ));
             }),
-            _buildPieChartControls(context, state),
+            _buildPieChartControls(context, state, isTool),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPieChartSections(BuildContext context, List<Tool?> state, double size) {
-    return PieChart(
-      PieChartData(
-        sections: List.generate(state.length, (index) {
-          final tool = state[index];
-          final isOverdue = tool != null && DateTime.now().difference(tool.dateAdded).inDays >= 3;
-          return PieChartSectionData(
-            color: isOverdue ? Colors.red : Colors.blue[300],
-            value: 1,
-            title: '',
-            radius: size / 2,
-            badgeWidget: tool != null
-                ? _buildToolBadge(context, index, tool)
-                : _buildAddToolIcon(context, index),
-            badgePositionPercentageOffset: 0.5,
-          );
-        }),
-        centerSpaceRadius: 100,
-        sectionsSpace: 6,
-        startDegreeOffset: 180,
+  Widget _buildPieChartSections(
+      BuildContext context, List<dynamic> state, double size, bool isTool) {
+    return GestureDetector(
+      onPanUpdate: (details) {
+        setState(() {
+          rotation += details.delta.dx;
+        });
+        print(rotation);
+      },
+      child: Transform.rotate(
+        angle: rotation,
+        child: PieChart(
+          PieChartData(
+            sections: List.generate(state.length, (index) {
+              final item = state[index];
+              final isOverdue = item != null &&
+                  DateTime.now().difference(item.dateAdded).inDays >= 3;
+              return PieChartSectionData(
+                color: isOverdue
+                    ? Colors.red
+                    : (isTool ? Colors.blue[300] : Colors.green[300]),
+                value: 1,
+                title: '',
+                radius: size / 2,
+                badgeWidget: Stack(
+                  children: [
+                    Center(
+                      child: item != null
+                          ? _buildBadge(context, index, item, isTool)
+                          : _buildAddIcon(context, index, isTool),
+                    ),
+                    Center(
+                      child: Transform.rotate(
+                        angle: () {
+                          var angle = (index + 0.5) / 22 * (2 * pi);
+                          return angle;
+                        }(),
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            right: 420,
+                          ),
+                          child: Text(
+                            '${index + 1}',
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                badgePositionPercentageOffset: 0.5,
+              );
+            }),
+            centerSpaceRadius: 100,
+            sectionsSpace: 6,
+            startDegreeOffset: 180,
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildToolBadge(BuildContext context, int index, Tool tool) {
+  Widget _buildBadge(
+      BuildContext context, int index, dynamic item, bool isTool) {
     return GestureDetector(
       onPanUpdate: (details) {
         setState(() {
-          tool.rotationAngle += details.delta.dx;
+          item.rotationAngle += details.delta.dx;
         });
       },
       child: Transform.rotate(
-        angle: tool.rotationAngle * pi / 180,
+        angle: item.rotationAngle * pi / 180,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              '${index + 1}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
             IconButton(
               onPressed: () {
-                context.read<ToolSelectionCubit>().removeTool(index);
+                if (isTool) {
+                  context.read<ToolSelectionCubit>().removeTool(index);
+                } else {
+                  context.read<CarrierSelectionCubit>().removeCarrier(index);
+                }
               },
               icon: const Icon(Icons.remove_circle_outline_outlined),
             ),
             Center(
               child: Text(
-                tool.name,
+                only(item.name, 20),
                 style: const TextStyle(fontSize: 24, color: Colors.black),
                 textAlign: TextAlign.center,
               ),
@@ -245,14 +341,22 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     );
   }
 
-  Widget _buildAddToolIcon(BuildContext context, int index) {
-    return BlocBuilder<ToolFetcherCubit, ToolFetcherState>(
+  Widget _buildAddIcon(BuildContext context, int index, bool isTool) {
+    final cubit = isTool
+        ? context.read<ToolFetcherCubit>()
+        : context.read<CarrierFetcherCubit>();
+    return BlocBuilder(
+      bloc: cubit,
       builder: (context, fetcherState) {
-        if (fetcherState is ToolsFetcherSuccess) {
-          final tools = fetcherState.tools;
+        if (fetcherState is FetcherSuccess) {
+          final items = fetcherState.items;
           return IconButton(
             onPressed: () {
-              showAddToolDialog(context, index, tools);
+              if (isTool) {
+                showAddToolDialog(context, index, items.cast<String>());
+              } else {
+                showAddCarrierDialog(context, index, items.cast<String>());
+              }
             },
             icon: const Icon(Icons.add_circle_outline_outlined),
           );
@@ -263,7 +367,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     );
   }
 
-  Widget _buildPieChartControls(BuildContext context, List<Tool?> state) {
+  Widget _buildPieChartControls(
+      BuildContext context, List<dynamic> state, bool isTool) {
     return Positioned(
       top: 0,
       right: 0,
@@ -285,12 +390,28 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
               value: (state.length / 40),
               onChanged: (v) {
                 final newLength = (v * 40).toInt().clamp(1, 40);
-                context.read<ToolSelectionCubit>().resizeTable(newLength);
+                if (isTool) {
+                  context.read<ToolSelectionCubit>().resizeTable(newLength);
+                } else {
+                  context.read<CarrierSelectionCubit>().resizeTable(newLength);
+                }
               },
             ),
             Text(
               'Number of sections: ${state.length}',
               style: TextStyle(color: Colors.grey[600], fontSize: 14),
+            ),
+            const Divider(),
+            Slider(
+              value: (rotation / (2 * pi) * 360).clamp(0, 720.0),
+              max: 720.0,
+              min: 0,
+              divisions: 5,
+              onChanged: (v) {
+                setState(() {
+                  rotation = v / 360 * (2 * pi);
+                });
+              },
             ),
           ],
         ),
@@ -298,7 +419,8 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
     );
   }
 
-  void showAddToolDialog(BuildContext context, int sectionIndex, List<String> tools) {
+  void showAddToolDialog(
+      BuildContext context, int sectionIndex, List<String> tools) {
     showDialog(
       context: context,
       builder: (context) {
@@ -313,7 +435,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                 title: Text(tools[index]),
                 onTap: () {
                   Navigator.pop(context);
-                  context.read<ToolSelectionCubit>().addTool(sectionIndex, tools[index]);
+                  context
+                      .read<ToolSelectionCubit>()
+                      .addTool(sectionIndex, tools[index]);
                 },
               ),
             ),
@@ -322,4 +446,32 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
       },
     );
   }
+}
+
+void showAddCarrierDialog(
+    BuildContext context, int sectionIndex, List<String> carriers) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text('Add a carrier to section $sectionIndex'),
+        content: SizedBox(
+          height: 400,
+          width: 100,
+          child: ListView.builder(
+            itemCount: carriers.length,
+            itemBuilder: (context, index) => ListTile(
+              title: Text(carriers[index]),
+              onTap: () {
+                Navigator.pop(context);
+                context
+                    .read<CarrierSelectionCubit>()
+                    .addCarrier(sectionIndex, carriers[index]);
+              },
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }

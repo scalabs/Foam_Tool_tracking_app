@@ -1,4 +1,4 @@
-import 'package:alati_app/tabs/reports_overview.dart';
+import 'package:alati_app/tabs/user_overview.dart';
 import 'package:flutter/material.dart';
 import 'package:alati_app/tabs/current_state_overview.dart';
 import 'package:alati_app/tabs/planning_overview.dart';
@@ -47,7 +47,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 3:
         return const MaintenanceScreen();
       case 4:
-        return const ReportsScreen();
+        return const UserScreen();
       default:
         return Center(
           child: Text("Placeholder Widget for ${tabTitles[selectedTabIndex]}"),

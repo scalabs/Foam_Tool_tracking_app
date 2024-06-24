@@ -2,13 +2,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 
-abstract class ToolsService {
+abstract class CarriersService {
   Future<List<String>> fetchData(String selectedFilter);
-  Future<void> addData(String tool, String filter);
-  Future<void> deleteData(String tool, String filter);
+  Future<void> addData(String carrier, String filter);
+  Future<void> deleteData(String carrier, String filter);
 }
 
-class APIToolsService implements ToolsService {
+class APICarriersService implements CarriersService {
   static const apiBaseUrl = 'http://127.0.0.1:5000/api/';
 
   @override
@@ -29,7 +29,7 @@ class APIToolsService implements ToolsService {
         break;
       default:
         // Fetch all tools if no filter is selected
-        filterEndpoint = 'active';
+        filterEndpoint = 'karijers';
         break;
     }
 
@@ -44,7 +44,7 @@ class APIToolsService implements ToolsService {
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
         debugPrint('Fetched data: $data');
-        return List<String>.from(data.map((item) => item['Alat']));
+        return List<String>.from(data.map((item) => item['Serijski_broj']));
       } else {
         throw Exception('Failed to load data: ${response.statusCode}');
       }
@@ -56,7 +56,7 @@ class APIToolsService implements ToolsService {
 
   @override
   Future<void> addData(String tool, String filter) async {
-    const apiUrl = '${apiBaseUrl}active';
+    const apiUrl = '${apiBaseUrl}karijers';
     await http.post(
       Uri.parse(apiUrl),
       body: jsonEncode({
@@ -81,16 +81,16 @@ class APIToolsService implements ToolsService {
   }
 }
 
-class FakeToolsService implements ToolsService {
-  final int toolsCount;
+class FakeCarrierService implements CarriersService {
+  final int carrierCount;
 
-  FakeToolsService({required this.toolsCount});
+  FakeCarrierService({required this.carrierCount});
   @override
   Future<List<String>> fetchData(String selectedFilter) {
     return Future.value(
       List<String>.generate(
-        toolsCount,
-        (index) => 'Tool ${index + 1}',
+        carrierCount,
+        (index) => 'Carrier ${index + 1}',
       ),
     );
   }

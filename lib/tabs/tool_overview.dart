@@ -30,8 +30,16 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
   String selectedFilter = 'All Tools';
 
   int numberOfSections = 22;
-  List<String?> addedTools = List.generate(22, (index) => null); // Initialize with null
-  final List<String> projectOptions = ['BMW Faar HI AU U06','BMW Faar KKST U11','BMW Faar Vorne ','BMW Faar HI MI  U06', 'Ineos Grenadier 1 Reihe','Empty'];
+  List<String?> addedTools =
+      List.generate(22, (index) => null); // Initialize with null
+  final List<String> projectOptions = [
+    'BMW Faar HI AU U06',
+    'BMW Faar KKST U11',
+    'BMW Faar Vorne ',
+    'BMW Faar HI MI  U06',
+    'Ineos Grenadier 1 Reihe',
+    'Empty'
+  ];
   final List<String> statusOptions = ['Active', 'Inactive', 'Pending'];
   final List<String> cleanStatusOptions = ['Clean', 'Not Clean'];
   final List<String> calibratedStatusOptions = ['Calibrated', 'Not Calibrated'];
@@ -45,9 +53,9 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
       checkToolAges();
     });
     context.read<ToolFetcherCubit>().fetchData('');
-
+    retrieveData(); // Retrieve data on initialization
   }
-  
+
   @override
   void dispose() {
     emailTimer?.cancel();
@@ -85,24 +93,33 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
   }
 
   List<DatabaseEntry> filterDatabaseEntries() {
-    if (selectedFilter == 'All') {
+    if (selectedFilter == 'All Tools') {
       return databaseEntries;
     } else if (selectedFilter == 'Tools Cleaned') {
-      return databaseEntries.where((entry) => entry.cleanStatus == 'Clean').toList();
+      return databaseEntries
+          .where((entry) => entry.cleanStatus == 'Clean')
+          .toList();
     } else if (selectedFilter == 'Tools Not Cleaned') {
-      return databaseEntries.where((entry) => entry.cleanStatus == 'Not Clean').toList();
+      return databaseEntries
+          .where((entry) => entry.cleanStatus == 'Not Clean')
+          .toList();
     } else if (selectedFilter == 'Tools Calibrated') {
-      return databaseEntries.where((entry) => entry.calibratedStatus == 'Calibrated').toList();
+      return databaseEntries
+          .where((entry) => entry.calibratedStatus == 'Calibrated')
+          .toList();
     } else if (selectedFilter == 'Tools Not Calibrated') {
-      return databaseEntries.where((entry) => entry.calibratedStatus == 'Not Calibrated').toList();
+      return databaseEntries
+          .where((entry) => entry.calibratedStatus == 'Not Calibrated')
+          .toList();
     }
     return databaseEntries;
   }
 
-    // Function to save data to shared preferences
+  // Function to save data to shared preferences
   Future<void> saveData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> entries = databaseEntries.map((entry) => jsonEncode(entry.toMap())).toList();
+    List<String> entries =
+        databaseEntries.map((entry) => jsonEncode(entry.toMap())).toList();
     prefs.setStringList('entries', entries);
   }
 
@@ -112,228 +129,225 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
     List<String>? entries = prefs.getStringList('entries');
     if (entries != null) {
       setState(() {
-        databaseEntries = entries.map((entry) => DatabaseEntry.fromMap(jsonDecode(entry))).toList();
+        databaseEntries = entries
+            .map((entry) => DatabaseEntry.fromMap(jsonDecode(entry)))
+            .toList();
       });
     }
   }
-  
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      backgroundColor: Colors.blue[400],
-      title: Text("Tool Overview"),
-    ),
-    body: BlocBuilder<ToolFetcherCubit, ToolFetcherState>(
-      builder: (context, state) {
-        if (state is ToolsFetcherSuccess) {
-          final tools = state.tools;    // Map tools to database entries
-          databaseEntries = tools.map((tool) {
-            return DatabaseEntry(
-              tool,
-              projectOptions.first,
-              'Active',
-              'User',
-              cleanStatusOptions.first,
-              calibratedStatusOptions.first,
-              DateTime.now(),
-              DateTime.now(),
-            );
-          }).toList();
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(8.0),
-                child: DropdownButton<String>(
-                  value: selectedFilter,
-                  onChanged: (String? value) {
-                    setState(() {
-                      selectedFilter = value!;
-                    });
-                  },
-                  items: filterOptions.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: <Widget>[
-                      DataTable(
-                        columns: const <DataColumn>[
-                          DataColumn(
-                              label: Text('Tool',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold))),
-                          DataColumn(
-                              label: Text('Project',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold))),
-                          DataColumn(
-                              label: Text('Status',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold))),
-                          DataColumn(
-                              label: Text('User Role',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold))),
-                          DataColumn(
-                              label: Text('Clean Status',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold))),
-                          DataColumn(
-                              label: Text('Calibrated Status',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold))),
-                          DataColumn(
-                              label: Text('Date Added',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold))),
-                          DataColumn(
-                              label: Text('Time Elapsed',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold))),
-                          DataColumn(
-                              label: Text('Actions',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold))),
-                        ],
-                        rows: databaseEntries.map((entry) {
-                          bool isOverdue = DateTime.now().difference(entry.dateAdded).inDays >= 3;
-                          return DataRow(
-                            color: isOverdue ? MaterialStateProperty.all(Colors.red.withOpacity(0.3)) : null,
-                            cells: <DataCell>[
-                              DataCell(Text(entry.tool)),
-                              DataCell(buildProjectDropdown(entry)),
-                              DataCell(buildStatusDropdown(entry)),
-                              DataCell(Text(entry.userRole)),
-                              DataCell(buildCleanStatusDropdown(entry)),
-                              DataCell(buildCalibratedStatusDropdown(entry)),
-                              DataCell(Text(entry.dateAdded.toString())),
-                              DataCell(
-                                  Text(calculateTimeElapsed(entry.dateAdded))),
-                              DataCell(
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.delete),
-                                      onPressed: () {
-                                        databaseEntries.remove(entry);
-                                        setState(() {});
-                                      },
-                                    ),
-                                    if (isOverdue)
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          resetToolTimer(entry);
-                                        },
-                                        child: const Text('Tool Check', style: TextStyle(color: Colors.red)),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList(),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: [
-                            TextField(
-                              controller: toolController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Tool'),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                DatabaseEntry newEntry = DatabaseEntry(
-                                  toolController.text,
-                                  projectController.text,
-                                  'Active',
-                                  'User',
-                                  'Clean Status',
-                                  'Calibrated Status',
-                                  DateTime.now(),
-                                  DateTime.now(),
-                                );
-                                databaseEntries.add(newEntry);
-                                toolController.clear();
-                                projectController.clear();
-                                setState(() {});
-                              },
-                              child: const Text('Add Tool'),
-                            ),
-                            const SizedBox(height: 8),
-                            //ElevatedButton(
-                              //onPressed: () {
-                                //databaseEntries[0].status = 'Inactive';
-                                //databaseEntries[0].userRole = 'Admin';
-                                //setState(() {});
-                              //},
-                              //child: const Text(
-                                  //'Make a Change in Database (Key User)'),
-                            //),
-                          ],
-                        ),
-                      ),
-                    ],
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.blue[400],
+        title: const Text("Tool Overview"),
+      ),
+      body: BlocBuilder<ToolFetcherCubit, FetcherState>(
+        builder: (context, state) {
+          if (state is FetcherSuccess) {
+            final tools = state.items;
+
+            // Only update databaseEntries if it is empty to avoid overwriting existing data
+            if (databaseEntries.isEmpty) {
+              databaseEntries = tools.map((tool) {
+                return DatabaseEntry(
+                  tool,
+                  projectOptions.first,
+                  'Active',
+                  'User',
+                  cleanStatusOptions.first,
+                  calibratedStatusOptions.first,
+                  DateTime.now(),
+                  DateTime.now(),
+                );
+              }).toList();
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(8.0),
+                  child: DropdownButton<String>(
+                    value: selectedFilter,
+                    onChanged: (String? value) {
+                      setState(() {
+                        selectedFilter = value!;
+                      });
+                    },
+                    items: filterOptions
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
                   ),
                 ),
-              ),
-            ],
-          );
-        } else {
-          return const Center(child: CircularProgressIndicator());
-        }
-      },
-    ),
-  );
-}
-
-Widget buildProjectDropdown(DatabaseEntry entry) {
-  String selectedProject = entry.project;
-  if (!projectOptions.contains(selectedProject)) {
-    selectedProject = projectOptions.first;
-    entry.project = selectedProject;
-    saveData(); // Save the updated value to SharedPreferences
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        DataTable(
+                          columns: const <DataColumn>[
+                            DataColumn(
+                                label: Text('Tool',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('Project',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('Status',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('User Role',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('Clean Status',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('Calibrated Status',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('Date Added',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('Time Elapsed',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold))),
+                            DataColumn(
+                                label: Text('Actions',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold))),
+                          ],
+                          rows: databaseEntries.map((entry) {
+                            bool isOverdue = DateTime.now()
+                                    .difference(entry.dateAdded)
+                                    .inDays >=
+                                3;
+                            return DataRow(
+                              color: isOverdue
+                                  ? MaterialStateProperty.all(
+                                      Colors.red.withOpacity(0.3))
+                                  : null,
+                              cells: <DataCell>[
+                                DataCell(Text(entry.tool)),
+                                DataCell(buildProjectDropdown(entry)),
+                                DataCell(buildStatusDropdown(entry)),
+                                DataCell(Text(entry.userRole)),
+                                DataCell(buildCleanStatusDropdown(entry)),
+                                DataCell(buildCalibratedStatusDropdown(entry)),
+                                DataCell(Text(entry.dateAdded.toString())),
+                                DataCell(Text(
+                                    calculateTimeElapsed(entry.dateAdded))),
+                                DataCell(
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.delete),
+                                        onPressed: () {
+                                          databaseEntries.remove(entry);
+                                          setState(() {});
+                                        },
+                                      ),
+                                      if (isOverdue)
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            resetToolTimer(entry);
+                                          },
+                                          child: const Text('Tool Check',
+                                              style:
+                                                  TextStyle(color: Colors.red)),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            children: [
+                              TextField(
+                                controller: toolController,
+                                decoration:
+                                    const InputDecoration(labelText: 'Tool'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  DatabaseEntry newEntry = DatabaseEntry(
+                                    toolController.text,
+                                    projectController.text,
+                                    'Active',
+                                    'User',
+                                    'Clean Status',
+                                    'Calibrated Status',
+                                    DateTime.now(),
+                                    DateTime.now(),
+                                  );
+                                  databaseEntries.add(newEntry);
+                                  toolController.clear();
+                                  projectController.clear();
+                                  setState(() {});
+                                },
+                                child: const Text('Add Tool'),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
+      ),
+    );
   }
 
-  return DropdownButton<String>(
-    value: selectedProject,
-    onChanged: (newValue) {
-      setState(() {
-        entry.project = newValue!;
-        saveData(); // Save data after changing project
-      });
-    },
-    items: projectOptions.map((project) {
-      return DropdownMenuItem<String>(
-        value: project,
-        child: Text(project),
-      );
-    }).toList(),
-  );
-}
-
-
-
+  Widget buildProjectDropdown(DatabaseEntry entry) {
+    return DropdownButton<String>(
+      value: entry.project,
+      onChanged: (newValue) {
+        setState(() {
+          entry.project = newValue!;
+          saveData(); // Save data after changing project
+        });
+      },
+      items: projectOptions.map((project) {
+        return DropdownMenuItem<String>(
+          value: project,
+          child: Text(project),
+        );
+      }).toList(),
+    );
+  }
 
   Widget buildStatusDropdown(DatabaseEntry entry) {
     return DropdownButton<String>(
@@ -341,7 +355,7 @@ Widget buildProjectDropdown(DatabaseEntry entry) {
       onChanged: (newValue) {
         setState(() {
           entry.status = newValue!;
-          //saveData(); // Save data after changing status
+          saveData(); // Save data after changing status
         });
       },
       items: statusOptions.map((status) {
@@ -353,46 +367,31 @@ Widget buildProjectDropdown(DatabaseEntry entry) {
     );
   }
 
-Widget buildCleanStatusDropdown(DatabaseEntry entry) {
-  String selectedCleanStatus = entry.cleanStatus;
-  if (!cleanStatusOptions.contains(selectedCleanStatus)) {
-    selectedCleanStatus = cleanStatusOptions.first;
-    entry.cleanStatus = selectedCleanStatus;
-    saveData(); // Save the updated value to SharedPreferences
+  Widget buildCleanStatusDropdown(DatabaseEntry entry) {
+    return DropdownButton<String>(
+      value: entry.cleanStatus,
+      onChanged: (newValue) {
+        setState(() {
+          entry.cleanStatus = newValue!;
+          saveData(); // Save data after changing clean status
+        });
+      },
+      items: cleanStatusOptions.map((status) {
+        return DropdownMenuItem<String>(
+          value: status,
+          child: Text(status),
+        );
+      }).toList(),
+    );
   }
 
-  return DropdownButton<String>(
-    value: selectedCleanStatus,
-    onChanged: (newValue) {
-      setState(() {
-        entry.cleanStatus = newValue!;
-        saveData(); // Save data after changing clean status
-      });
-    },
-    items: cleanStatusOptions.map((status) {
-      return DropdownMenuItem<String>(
-        value: status,
-        child: Text(status),
-      );
-    }).toList(),
-  );
-}
-
-
   Widget buildCalibratedStatusDropdown(DatabaseEntry entry) {
-    // Check if the current calibratedStatus is present in calibratedStatusOptions
-    if (!calibratedStatusOptions.contains(entry.calibratedStatus)) {
-      // If not present, set the default value to the first item in calibratedStatusOptions
-      entry.calibratedStatus = calibratedStatusOptions.first;
-      //saveData(); // Save the updated value to the database
-    }
-
     return DropdownButton<String>(
       value: entry.calibratedStatus,
       onChanged: (newValue) {
         setState(() {
           entry.calibratedStatus = newValue!;
-          //saveData(); // Save data after changing calibrated status
+          saveData(); // Save data after changing calibrated status
         });
       },
       items: calibratedStatusOptions.map((status) {
@@ -421,7 +420,6 @@ class DatabaseEntry {
   DateTime dateCleaned;
   bool alertSent = false;
 
-
   DatabaseEntry(
     this.tool,
     this.project,
@@ -433,7 +431,7 @@ class DatabaseEntry {
     this.dateCleaned,
   );
 
-    Map<String, dynamic> toMap() {
+  Map<String, dynamic> toMap() {
     return {
       'tool': tool,
       'project': project, // Changed from project to projectStatus
@@ -445,6 +443,7 @@ class DatabaseEntry {
       'dateCleaned': dateCleaned.millisecondsSinceEpoch,
     };
   }
+
   // Method to create DatabaseEntry from Map
   factory DatabaseEntry.fromMap(Map<String, dynamic> map) {
     return DatabaseEntry(
