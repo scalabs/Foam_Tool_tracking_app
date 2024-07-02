@@ -9,7 +9,9 @@ abstract class CarriersService {
 }
 
 class APICarriersService implements CarriersService {
-  static const apiBaseUrl = 'http://127.0.0.1:5000/api/';
+  static const apiBaseUrl = 'http://10.3.41.24:5001/api/';
+  //http://10.3.41.24:5001/ ovo je za live
+  //http://127.0.0.1:5000/api/'; je za test
 
   @override
   Future<List<String>> fetchData(String selectedFilter) async {
