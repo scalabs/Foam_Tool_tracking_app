@@ -51,4 +51,8 @@ class ToolSelectionCubit extends Cubit<List<Tool?>> {
   void selectNextTool(int itemCount) {}
 
   void selectPreviousTool(int itemCount) {}
+
+  void updateSelectedIndex(int touchedIndex) {}
+
+  void resetSelection() {}
 }

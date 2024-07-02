@@ -48,4 +48,10 @@ class CarrierSelectionCubit extends Cubit<List<Carrier?>> {
   void selectNextCarrier(int itemCount) {}
 
   void selectPreviousCarrier(int itemCount) {}
+
+  void addTool(int index, String text) {}
+
+  void updateTool(int index, String text) {}
+
+  void updateSelectedIndex(int touchedIndex) {}
 }

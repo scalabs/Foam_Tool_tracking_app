@@ -11,7 +11,7 @@ class ReadOnlyWrapper extends StatelessWidget {
     return AbsorbPointer(
       absorbing: true, // Absorb any user interactions
       child: IgnorePointer(
-        ignoring: true, // Ignore any pointer events
+        ignoring: false, // Ignore any pointer events
         child: child,
       ),
     );
@@ -23,13 +23,13 @@ class CurrentStateScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tab 1 (Read-Only)'),
-      ),
-      body: const ReadOnlyWrapper(
+    return const Scaffold(
+      // appBar: AppBar(
+      //   title: const Text('Tab 1 (Read-Only)'),
+      body: ReadOnlyWrapper(
         child: MaintenanceScreen(),
       ),
     );
   }
 }
+ 

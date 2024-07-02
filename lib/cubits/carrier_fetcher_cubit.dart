@@ -3,6 +3,10 @@ import 'package:alati_app/services/carrier_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+
+
+
+
 class CarrierFetcherCubit extends Cubit<FetcherState> {
   final CarriersService service;
   CarrierFetcherCubit(this.service) : super(FetcherLoading()) {
@@ -20,3 +24,4 @@ class CarrierFetcherCubit extends Cubit<FetcherState> {
     }
   }
 }
+

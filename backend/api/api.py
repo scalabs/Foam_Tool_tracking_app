@@ -26,7 +26,8 @@ app = Flask(__name__)
 #CORS(app) 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 # Replace these with your actual SQL Server credentials
-server = "NB-JI-0316\\SQLEXPRESS"
+#"NB-JI-0316\\SQLEXPRESS" for testing on local pc
+server = "10.3.28.68"
 port = 3306
 database = 'Foam_tools'
 username = 'bde'
@@ -83,15 +84,17 @@ def handle_active():
         try:
             cursor.execute(delete_query, (tool_name,))
             conn.commit()
+            print(f"Tool '{tool_name}' deleted from the database.")
             return jsonify({"message": "Tool deleted successfully"})
         except Exception as e:
             conn.rollback()
+            print(f"Error deleting tool '{tool_name}': {str(e)}")
             return jsonify({"error": str(e)}), 500
 
 
 # Route for /api/karijeri
-@app.route("/api/karijers", methods=["GET"])
-def handle_carriers():
+@app.route("/api/karijers", methods=["GET", "POST", "DELETE"])
+def handle_carrier():
     if request.method == "GET":
         cursor.execute(
             "SELECT TOP (1000)  [Serijski_broj] FROM [Foam_tools].[dbo].[Karijers]"
@@ -101,6 +104,48 @@ def handle_carriers():
             for row in cursor.fetchall()
         ]
         return jsonify(karijeri_data)
+
+    elif request.method == "POST":
+        data = request.get_json()
+        carrier_name = data.get('Serijski_broj')
+        
+        # Ensure your connection and cursor are properly set up
+        try:
+            # Correct SQL query with parameter placeholder
+            insert_query = "INSERT INTO [Foam_tools].[dbo].[Karijers] ([Serijski_broj]) VALUES (?)"
+            
+            # Execute query with parameter tuple
+            cursor.execute(insert_query, (carrier_name,))
+            conn.commit()
+            
+            print(f"Carrier '{carrier_name}' added to the database.")
+            return jsonify({"message": "Carrier added successfully"})
+        
+        except Exception as e:
+            conn.rollback()
+            print(f"Error adding carrier '{carrier_name}': {str(e)}")
+            return jsonify({"error": str(e)}), 500
+
+
+    elif request.method == "DELETE":
+        data = request.get_json()
+        carrier_name = data.get('Serijski_broj')
+        
+        try:
+            # Example SQL delete query
+            delete_query = """DELETE FROM [dbo].[Karijers] WHERE Serijski_broj = ? """
+            
+            # Execute query with parameter tuple
+            cursor.execute(delete_query, (carrier_name))
+            conn.commit()
+            
+            print(f"Carrier '{carrier_name}' deleted from the database.")
+            return jsonify({"message": "Carrier deleted successfully"})
+        
+        except Exception as e:
+            conn.rollback()
+            print(f"Error deleting carrier '{carrier_name}': {str(e)}")
+            return jsonify({"error": str(e)}), 500
 
 
 
@@ -125,7 +170,6 @@ def handle_users():
         return jsonify(users)
 
     elif request.method == 'POST':
-        # Example of handling POST request to add a new user
         data = request.json
         username = data.get('username')
         email = data.get('email')
@@ -140,8 +184,7 @@ def handle_users():
             return jsonify({'error': 'Missing data. Required fields: username, email, permissions'}), 400
 
     elif request.method == 'DELETE':
-        # Example of handling DELETE request to delete a user
-        user_id = request.args.get('id')
+        user_id = request.args.get('id')  # Get the user id from query parameters
 
         if user_id:
             cursor.execute('DELETE FROM dbo.Users WHERE id = ?', (user_id,))
@@ -149,6 +192,7 @@ def handle_users():
             return jsonify({'message': f'User with id {user_id} deleted successfully'}), 200
         else:
             return jsonify({'error': 'Missing user id parameter'}), 400
+
 
 
 # Route for /api/oficijalno

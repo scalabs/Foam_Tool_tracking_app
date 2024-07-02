@@ -4,6 +4,7 @@ import 'package:alati_app/tabs/current_state_overview.dart';
 import 'package:alati_app/tabs/planning_overview.dart';
 import 'package:alati_app/tabs/tool_overview.dart';
 import 'package:alati_app/tabs/maintenance_overview.dart';
+import 'package:alati_app/tabs/carrier_overview.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -22,6 +23,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     Icons.segment_outlined,
     Icons.space_dashboard_outlined,
     Icons.calendar_today,
+    Icons.calendar_month_rounded,
     Icons.settings,
     Icons.report, // Add an extra icon
   ];
@@ -31,6 +33,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     'Current state overview',
     'Planning',
     'Tool Overview',
+    'Carrier Overview',
     'Maintenace',
     'User settings',
   ];
@@ -45,8 +48,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 2:
         return const ToolsOverviewScreen();
       case 3:
+        return const CarrierOverviewScreen();
+      case 4:  
         return const MaintenanceScreen();
-      case 4:
+      case 5:
         return const UserScreen();
       default:
         return Center(
@@ -94,7 +99,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildInfoMenu(BuildContext context) {
     return IconButton(
       onPressed: () async {
-        var version = '0.5'; // Placeholder verzija
+        var version = '1.0.0'; // Placeholder verzija
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -217,6 +222,8 @@ IconData getIconForTabIndex(int index) {
     case 2:
       return Icons.calendar_month_outlined;
     case 3:
+      return Icons.calendar_month_rounded;
+    case 4:
       return Icons.manage_accounts;
     default:
       return Icons.error;

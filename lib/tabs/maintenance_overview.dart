@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
 String only(String string, int max) =>
     max >= (string.length - 1) ? string : string.substring(0, max);
 
@@ -22,19 +23,13 @@ class MaintenanceScreen extends StatefulWidget {
 }
 
 class _MaintenanceScreenState extends State<MaintenanceScreen> {
-  final List<String> filterOptions = [
-    'All',
-    'Tools Cleaned',
-    'Tools Not Cleaned',
-    'Tools Calibrated',
-    'Tools Not Calibrated',
-  ];
-
   String selectedFilter = 'All';
   final TextEditingController _controller = TextEditingController();
   late SharedPreferences prefs;
 
   bool showTools = true; // State to toggle between tools and carriers
+  bool showFilters = false; // State to show/hide the filters
+
   CarriersService apiService = APICarriersService();
 
   double rotation = 0;
@@ -82,7 +77,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    _buildFilterColumn(context),
+                    if (showFilters) _buildFilterColumn(context),
                     const SizedBox(
                       width: 16,
                     ), // Added space between column and pie chart
@@ -92,21 +87,40 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                   ],
                 ),
               ),
-              floatingActionButton: FloatingActionButton(
-                onPressed: () {
-                  setState(() {
-                    showTools = !showTools;
-                  });
-                  if (showTools) {
-                    context.read<ToolFetcherCubit>().fetchData(selectedFilter);
-                  } else {
-                    context
-                        .read<CarrierFetcherCubit>()
-                        .fetchData(selectedFilter);
-                  }
-                },
-                tooltip: showTools ? 'Switch to Carriers' : 'Switch to Tools',
-                child: Icon(showTools ? Icons.build : Icons.local_shipping),
+              floatingActionButton: Stack(
+                children: [
+                  Positioned(
+                    bottom: 16,
+                    left: 16,
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        setState(() {
+                          showFilters = !showFilters;
+                        });
+                      },
+                      tooltip: showFilters ? 'Hide Filters' : 'Show Filters',
+                      child: Icon(showFilters ? Icons.visibility_off : Icons.visibility),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 16,
+                    right: 16,
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        setState(() {
+                          showTools = !showTools;
+                        });
+                        if (showTools) {
+                          context.read<ToolFetcherCubit>().fetchData(selectedFilter);
+                        } else {
+                          context.read<CarrierFetcherCubit>().fetchData(selectedFilter);
+                        }
+                      },
+                      tooltip: showTools ? 'Switch to Carriers' : 'Switch to Tools',
+                      child: Icon(showTools ? Icons.build : Icons.local_shipping),
+                    ),
+                  ),
+                ],
               ),
             );
           },
@@ -146,6 +160,14 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   }
 
   Widget _buildFilterDropdown(BuildContext context) {
+    final List<String> filterOptions = [
+      'All',
+      'Tools Cleaned',
+      'Tools Not Cleaned',
+      'Tools Calibrated',
+      'Tools Not Calibrated',
+    ];
+
     return SizedBox(
       width: 200,
       child: Padding(
@@ -220,7 +242,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
               ),
             ),
             LayoutBuilder(builder: (context, constraints) {
-              final size = constraints.maxWidth - 1065;
+              final size = constraints.maxWidth - 1190;
               return Center(
                   child: SizedBox(
                 width: size,
@@ -401,18 +423,18 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
               'Number of sections: ${state.length}',
               style: TextStyle(color: Colors.grey[600], fontSize: 14),
             ),
-            const Divider(),
-            Slider(
-              value: (rotation / (2 * pi) * 360).clamp(0, 720.0),
-              max: 720.0,
-              min: 0,
-              divisions: 5,
-              onChanged: (v) {
-                setState(() {
-                  rotation = v / 360 * (2 * pi);
-                });
-              },
-            ),
+            // const Divider(),
+            // Slider(
+            //   value: (rotation / (2 * pi) * 360).clamp(0, 720.0),
+            //   max: 720.0,
+            //   min: 0,
+            //   divisions: 5,
+            //   onChanged: (v) {
+            //     setState(() {
+            //       rotation = v / 360 * (2 * pi);
+            //     });
+            //   },
+            // ),
           ],
         ),
       ),

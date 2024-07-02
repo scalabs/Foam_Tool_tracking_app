@@ -47,15 +47,16 @@ class _UserScreenState extends State<UserScreen> {
     );
   }
 
-  void _deleteUser(int id) {
-    userService.deleteUser(id).then((_) {
-      _refreshUsers();
-    }).catchError((error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to delete user')),
-      );
-    });
-  }
+ void _deleteUser(int id) {
+  userService.deleteUser(id).then((_) {
+    _refreshUsers();
+  }).catchError((error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to delete user')),
+    );
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -115,11 +116,11 @@ class UserDialog extends StatefulWidget {
   final VoidCallback onSave;
 
   const UserDialog({
-    Key? key,
+    super.key,
     required this.userService,
     this.user,
     required this.onSave,
-  }) : super(key: key);
+  });
 
   @override
   _UserDialogState createState() => _UserDialogState();

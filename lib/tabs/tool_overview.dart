@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'package:alati_app/services/tools_service.dart';
 import 'package:alati_app/cubits/tool_fetcher_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -40,7 +40,7 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
     'Ineos Grenadier 1 Reihe',
     'Empty'
   ];
-  final List<String> statusOptions = ['Active', 'Inactive', 'Pending'];
+  final List<String> statusOptions = ['Active', 'Inactive', 'Pending', 'Active working condition', 'Inactive not working condition'];
   final List<String> cleanStatusOptions = ['Clean', 'Not Clean'];
   final List<String> calibratedStatusOptions = ['Calibrated', 'Not Calibrated'];
 
@@ -264,9 +264,16 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
                                     children: [
                                       IconButton(
                                         icon: const Icon(Icons.delete),
-                                        onPressed: () {
-                                          databaseEntries.remove(entry);
-                                          setState(() {});
+                                        onPressed: () async {
+                                          try {
+                                            await context.read<APIToolsService>().deleteData(entry.tool, selectedFilter);
+                                            setState(() {
+                                              databaseEntries.remove(entry);
+                                            });
+                                            saveData(); // Save data after deleting entry
+                                          } catch (e) {
+                                            print('Error deleting tool: $e');
+                                          }
                                         },
                                       ),
                                       if (isOverdue)
@@ -295,21 +302,35 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
                                     const InputDecoration(labelText: 'Tool'),
                               ),
                               ElevatedButton(
-                                onPressed: () {
-                                  DatabaseEntry newEntry = DatabaseEntry(
-                                    toolController.text,
-                                    projectController.text,
-                                    'Active',
-                                    'User',
-                                    'Clean Status',
-                                    'Calibrated Status',
-                                    DateTime.now(),
-                                    DateTime.now(),
-                                  );
-                                  databaseEntries.add(newEntry);
-                                  toolController.clear();
-                                  projectController.clear();
-                                  setState(() {});
+                                onPressed: () async {
+                                  String toolName = toolController.text;
+                                  String project = projectOptions.isNotEmpty ? projectOptions.first : '';
+                                  String status = statusOptions.isNotEmpty ? statusOptions.first : '';
+                                  String cleanStatus = cleanStatusOptions.isNotEmpty ? cleanStatusOptions.first : '';
+                                  String calibratedStatus = calibratedStatusOptions.isNotEmpty ? calibratedStatusOptions.first : '';
+
+                                  if (toolName.isNotEmpty) {
+                                    try {
+                                      await context.read<APIToolsService>().addData(toolName, project);
+                                      DatabaseEntry newEntry = DatabaseEntry(
+                                        toolName,
+                                        project,
+                                        status,
+                                        'User',
+                                        cleanStatus,
+                                        calibratedStatus,
+                                        DateTime.now(),
+                                        DateTime.now(),
+                                      );
+                                      setState(() {
+                                        databaseEntries.add(newEntry);
+                                        toolController.clear();
+                                      });
+                                      saveData(); // Save data after adding new entry
+                                    } catch (e) {
+                                      print('Error adding tool: $e');
+                                    }
+                                  }
                                 },
                                 child: const Text('Add Tool'),
                               ),

@@ -55,12 +55,12 @@ class APICarriersService implements CarriersService {
   }
 
   @override
-  Future<void> addData(String tool, String filter) async {
+  Future<void> addData(String carrier, String filter) async {
     const apiUrl = '${apiBaseUrl}karijers';
     await http.post(
       Uri.parse(apiUrl),
       body: jsonEncode({
-        'tool': tool,
+        'Serijski_broj': carrier,
         'filter': filter,
       }),
       headers: {'Content-Type': 'application/json'},
@@ -68,12 +68,12 @@ class APICarriersService implements CarriersService {
   }
 
   @override
-  Future<void> deleteData(String tool, String filter) async {
-    const apiUrl = '${apiBaseUrl}active';
+  Future<void> deleteData(String carrier, String filter) async {
+    const apiUrl = '${apiBaseUrl}karijers';
     await http.delete(
       Uri.parse(apiUrl),
       body: jsonEncode({
-        'tool': tool,
+        'Serijski_broj': carrier,
         'filter': filter,
       }),
       headers: {'Content-Type': 'application/json'},

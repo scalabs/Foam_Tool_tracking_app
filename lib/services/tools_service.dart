@@ -54,18 +54,32 @@ class APIToolsService implements ToolsService {
     }
   }
 
-  @override
-  Future<void> addData(String tool, String filter) async {
-    const apiUrl = '${apiBaseUrl}active';
-    await http.post(
+@override
+Future<void> addData(String tool, String filter) async {
+  const apiUrl = '${apiBaseUrl}active';
+  try {
+    final response = await http.post(
       Uri.parse(apiUrl),
       body: jsonEncode({
         'tool': tool,
-        'filter': filter,
+        'project': filter, // Include other fields if necessary
+        // Add more fields here as needed
       }),
       headers: {'Content-Type': 'application/json'},
     );
+
+    if (response.statusCode == 200) {
+      print('Tool added successfully');
+    } else {
+      print('Failed to add tool: ${response.statusCode}');
+      print('Response body: ${response.body}');
+    }
+  } catch (e) {
+    print('Error adding tool: $e');
   }
+}
+
+
 
   @override
   Future<void> deleteData(String tool, String filter) async {
