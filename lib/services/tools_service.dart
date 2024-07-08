@@ -9,8 +9,8 @@ abstract class ToolsService {
 }
 
 class APIToolsService implements ToolsService {
-  static const apiBaseUrl = 'http://10.3.41.24:5001/api/';
-    //http://10.3.41.24:5001/ ovo je za live
+  static const apiBaseUrl = 'http://10.3.41.24:5002/api/';
+    //http://10.3.41.24:5002/ ovo je za live
   //http://127.0.0.1:5000/api/'; je za test
 
   @override

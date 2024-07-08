@@ -31,7 +31,7 @@ class ApiPlanningService implements PlanningService {
   @override
   Future<void> addData(WeeklyPlanningModel model) async {
     http.put(
-      Uri.parse('http://10.3.41.24:5001/api/weekly_shifts'),
+      Uri.parse('http://10.3.41.24:5002/api/weekly_shifts'),
       //10.3.41.24 for live 
       //127.0.0.1:5000 for test
       body:jsonEncode(model.toMap()),);
@@ -40,13 +40,13 @@ class ApiPlanningService implements PlanningService {
   @override
   Future<void> deleteData(int id) async {
     http.delete(
-      Uri.parse('http://10.3.41.24:5001/api/weekly_shifts/$id'));
+      Uri.parse('http://10.3.41.24:5002/api/weekly_shifts/$id'));
   }
 
   @override
   Future<List<WeeklyPlanningModel>> fetchData () async {
     final response = await http.get(
-      Uri.parse('http://10.3.41.24:5001/api/weekly_shifts'),
+      Uri.parse('http://10.3.41.24:5002/api/weekly_shifts'),
       );
     final json = jsonDecode(response.body) as List;
     return json.map((e) => WeeklyPlanningModel.fromMap(e)).toList();
@@ -55,7 +55,7 @@ class ApiPlanningService implements PlanningService {
   @override
   Future<void> updateData(int id, WeeklyPlanningModel model) async {
     http.put(
-      Uri.parse('http://10.3.41.24:5001/api/weekly_shifts/$id'),
+      Uri.parse('http://10.3.41.24:5002/api/weekly_shifts/$id'),
       body:jsonEncode(model.toMap()),);
   }
   

@@ -16,8 +16,8 @@ class _UserScreenState extends State<UserScreen> {
   @override
   void initState() {
     super.initState();
-    userService = UserService('http://10.3.41.24:5001'); // Change to your API base URL
-  //http://10.3.41.24:5001/ ovo je za live
+    userService = UserService('http://10.3.41.24:5002'); // Change to your API base URL
+  //http://10.3.41.24:5002/ ovo je za live
   //http://127.0.0.1:5000/api/'; je za test
     users = userService.getUsers();
   }
