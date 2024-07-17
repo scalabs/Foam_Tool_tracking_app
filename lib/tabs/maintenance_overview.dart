@@ -6,11 +6,10 @@ import 'package:alati_app/cubits/tool_selection_cubit.dart';
 import 'package:alati_app/models/carrier_model.dart';
 import 'package:alati_app/models/tool_model.dart';
 import 'package:alati_app/services/carrier_service.dart';
+import 'package:alati_app/services/table_name_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 
 String only(String string, int max) =>
     max >= (string.length - 1) ? string : string.substring(0, max);
@@ -25,7 +24,6 @@ class MaintenanceScreen extends StatefulWidget {
 class _MaintenanceScreenState extends State<MaintenanceScreen> {
   String selectedFilter = 'All';
   final TextEditingController _controller = TextEditingController();
-  late SharedPreferences prefs;
 
   bool showTools = true; // State to toggle between tools and carriers
   bool showFilters = false; // State to show/hide the filters
@@ -41,15 +39,15 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
   }
 
   Future<void> _loadSavedTableName() async {
-    prefs = await SharedPreferences.getInstance();
-    final savedTableName = prefs.getString('tableName') ?? 'Table 1';
+    final savedTableName =
+        await context.read<APITableNameService>().fetchData();
     setState(() {
       _controller.text = savedTableName;
     });
   }
 
   Future<void> _saveTableName(String tableName) async {
-    await prefs.setString('tableName', tableName);
+    await context.read<APITableNameService>().updateName(tableName);
   }
 
   @override
@@ -99,7 +97,9 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                         });
                       },
                       tooltip: showFilters ? 'Hide Filters' : 'Show Filters',
-                      child: Icon(showFilters ? Icons.visibility_off : Icons.visibility),
+                      child: Icon(showFilters
+                          ? Icons.visibility_off
+                          : Icons.visibility),
                     ),
                   ),
                   Positioned(
@@ -111,13 +111,29 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
                           showTools = !showTools;
                         });
                         if (showTools) {
-                          context.read<ToolFetcherCubit>().fetchData(selectedFilter);
+                          context
+                              .read<ToolFetcherCubit>()
+                              .fetchData(selectedFilter);
+
+                          context
+                              .read<APITableNameService>()
+                              .tableNameEndpoint = 'table_name_tools';
+                          _loadSavedTableName();
                         } else {
-                          context.read<CarrierFetcherCubit>().fetchData(selectedFilter);
+                          context
+                              .read<CarrierFetcherCubit>()
+                              .fetchData(selectedFilter);
+
+                          context
+                              .read<APITableNameService>()
+                              .tableNameEndpoint = 'table_name_carriers';
+                          _loadSavedTableName();
                         }
                       },
-                      tooltip: showTools ? 'Switch to Carriers' : 'Switch to Tools',
-                      child: Icon(showTools ? Icons.build : Icons.local_shipping),
+                      tooltip:
+                          showTools ? 'Switch to Carriers' : 'Switch to Tools',
+                      child:
+                          Icon(showTools ? Icons.build : Icons.local_shipping),
                     ),
                   ),
                 ],
@@ -402,12 +418,17 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
           children: [
             TextField(
               controller: _controller,
-              onChanged: (v) {
-                _saveTableName(v);
-                setState(() {});
-              },
               decoration: const InputDecoration(helperText: 'Roundtable name'),
             ),
+            TextButton.icon(
+              onPressed: () {
+                _saveTableName(_controller.text);
+                setState(() {});
+              },
+              icon: const Icon(Icons.done),
+              label: const Text('Save table name'),
+            ),
+            const Divider(),
             Slider(
               value: (state.length / 40),
               onChanged: (v) {

@@ -5,6 +5,7 @@ import 'package:alati_app/dashboard/dashboard.dart';
 import 'package:alati_app/models/week_of_the_year.dart';
 import 'package:alati_app/services/carrier_service.dart';
 import 'package:alati_app/services/planning_service.dart';
+import 'package:alati_app/services/table_name_service.dart';
 import 'package:alati_app/services/tools_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,39 +26,46 @@ class FoamApp extends StatelessWidget {
       providers: [
         RepositoryProvider(
           create: (context) => APIToolsService(),
-        ), RepositoryProvider(
+        ),
+        RepositoryProvider(
           create: (context) => APICarriersService(),
         ),
-         RepositoryProvider( //ovo mijenjati kad se planiranje napravi kako treba
+        RepositoryProvider(
+          create: (context) => APITableNameService(),
+        ),
+        RepositoryProvider(
+          //ovo mijenjati kad se planiranje napravi kako treba
           create: (context) => FakePlanningService(),
-         ),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
-            create: (context) => ToolFetcherCubit(context.read<APIToolsService>()),
+            create: (context) =>
+                ToolFetcherCubit(context.read<APIToolsService>()),
           ),
           BlocProvider(
             create: (context) => ToolSelectionCubit(),
           ),
           BlocProvider(
-            create: (context) => CarrierFetcherCubit(context.read<APICarriersService>()), // Initialize CarrierFetcherCubit with APICarriersService
+            create: (context) => CarrierFetcherCubit(context.read<
+                APICarriersService>()), // Initialize CarrierFetcherCubit with APICarriersService
           ),
           BlocProvider(
             create: (context) => CarrierSelectionCubit(),
           ),
-          BlocProvider(//ovo mijenjati kad se planiranje napravi kako treba
-            create: (context) => PlanningCubit(
-              selectedWeek: WeekOfTheYear(
-                //selfRef: null,
-                start: DateTime(2024, 1, 23),
-                end: DateTime(2024, 1, 28),
-                label: 'CW04',
-                number: 4,
-              ),
-              service: context.read<FakePlanningService>(),
-            )
-          )    
+          BlocProvider(
+              //ovo mijenjati kad se planiranje napravi kako treba
+              create: (context) => PlanningCubit(
+                    selectedWeek: WeekOfTheYear(
+                      //selfRef: null,
+                      start: DateTime(2024, 1, 23),
+                      end: DateTime(2024, 1, 28),
+                      label: 'CW04',
+                      number: 4,
+                    ),
+                    service: context.read<FakePlanningService>(),
+                  ))
         ],
         child: MaterialApp(
           home: const DashboardScreen(),
