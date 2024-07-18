@@ -1,8 +1,10 @@
+import 'package:alati_app/services/tools_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '/models/tool_model.dart';
 
 class ToolSelectionCubit extends Cubit<List<Tool?>> {
-  ToolSelectionCubit() : super(List<Tool?>.filled(22, null));
+  final ToolsService service;//So this is for saving the tools (interacting with the api<)
+  ToolSelectionCubit(this.service) : super(List<Tool?>.filled(22, null));
 
   void addTool(int index, String toolName) {
     final updatedTools = List<Tool?>.from(state);
@@ -14,6 +16,7 @@ class ToolSelectionCubit extends Cubit<List<Tool?>> {
       DateTime.now(), // Pass the current date and time as the dateAdded
       rotationAngle: angle, // Set rotation angle to 0 initially
     );
+    service.addData(toolName, 'Available');
     emit(updatedTools);
   }
 
@@ -22,6 +25,8 @@ class ToolSelectionCubit extends Cubit<List<Tool?>> {
     if (updatedTools[index] != null) {
       updatedTools[index]!.rotationAngle =
           0; // Reset rotation angle before removing the tool
+      service.deleteData(updatedTools[index]!.name, updatedTools[index]!.status);
+
     }
     updatedTools[index] = null;
     emit(updatedTools);

@@ -1,8 +1,10 @@
+import 'package:alati_app/services/carrier_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '/models/carrier_model.dart';
 
 class CarrierSelectionCubit extends Cubit<List<Carrier?>> {
-  CarrierSelectionCubit() : super(List<Carrier?>.filled(22, null));
+  final CarriersService service;//So this is for saving the tools (interacting with the api<)
+  CarrierSelectionCubit(this.service) : super(List<Carrier?>.filled(22, null));
 
   void addCarrier(int index, String carrierName) {
     final updatedCarriers = List<Carrier?>.from(state);
@@ -13,6 +15,7 @@ class CarrierSelectionCubit extends Cubit<List<Carrier?>> {
       DateTime.now(),
       rotationAngle: angle,
     );
+    service.addData(carrierName, 'Available');
     emit(updatedCarriers);
   }
 
@@ -20,6 +23,8 @@ class CarrierSelectionCubit extends Cubit<List<Carrier?>> {
     final updatedCarriers = List<Carrier?>.from(state);
     if (updatedCarriers[index] != null) {
       updatedCarriers[index]!.rotationAngle = 0;
+      service.deleteData(updatedCarriers[index]!.name, updatedCarriers[index]!.status);
+
     }
     updatedCarriers[index] = null;
     emit(updatedCarriers);

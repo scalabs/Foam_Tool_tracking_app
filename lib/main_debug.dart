@@ -33,7 +33,7 @@ class DebugFoamApp extends StatelessWidget {
                 ToolFetcherCubit(context.read<FakeToolsService>()),
           ),
           BlocProvider(
-            create: (context) => ToolSelectionCubit(),
+            create: (context) => ToolSelectionCubit(context.read<FakeToolsService>()),
           ),
           BlocProvider(
             create: (context) => PlanningCubit(

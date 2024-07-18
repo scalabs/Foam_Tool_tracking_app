@@ -45,14 +45,14 @@ class FoamApp extends StatelessWidget {
                 ToolFetcherCubit(context.read<APIToolsService>()),
           ),
           BlocProvider(
-            create: (context) => ToolSelectionCubit(),
+            create: (context) => ToolSelectionCubit(context.read<APIToolsService>()),
           ),
           BlocProvider(
             create: (context) => CarrierFetcherCubit(context.read<
                 APICarriersService>()), // Initialize CarrierFetcherCubit with APICarriersService
           ),
           BlocProvider(
-            create: (context) => CarrierSelectionCubit(),
+            create: (context) => CarrierSelectionCubit(context.read<APICarriersService>()),
           ),
           BlocProvider(
               //ovo mijenjati kad se planiranje napravi kako treba
