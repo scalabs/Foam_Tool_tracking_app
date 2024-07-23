@@ -246,7 +246,7 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
                                 3;
                             return DataRow(
                               color: isOverdue
-                                  ? MaterialStateProperty.all(
+                                  ? WidgetStateProperty.all(
                                       Colors.red.withOpacity(0.3))
                                   : null,
                               cells: <DataCell>[
@@ -272,7 +272,7 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
                                             });
                                             saveData(); // Save data after deleting entry
                                           } catch (e) {
-                                            print('Error deleting tool: $e');
+                                            debugPrint('Error deleting tool: $e');
                                           }
                                         },
                                       ),
@@ -328,7 +328,7 @@ class _ToolsOverviewScreenState extends State<ToolsOverviewScreen> {
                                       });
                                       saveData(); // Save data after adding new entry
                                     } catch (e) {
-                                      print('Error adding tool: $e');
+                                      debugPrint('Error adding tool: $e');
                                     }
                                   }
                                 },

@@ -287,7 +287,7 @@ class _MaintenanceScreenState extends State<MaintenanceScreen> {
         setState(() {
           rotation += details.delta.dx;
         });
-        print(rotation);
+        debugPrint(rotation.toStringAsFixed(2));
       },
       child: Transform.rotate(
         angle: rotation,

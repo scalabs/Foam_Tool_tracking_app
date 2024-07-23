@@ -3,10 +3,10 @@ import 'package:alati_app/services/user_service.dart';
 import 'package:flutter/material.dart';
 
 class UserScreen extends StatefulWidget {
-  const UserScreen({Key? key}) : super(key: key);
+  const UserScreen({super.key});
 
   @override
-  _UserScreenState createState() => _UserScreenState();
+  State<UserScreen> createState() => _UserScreenState();
 }
 
 class _UserScreenState extends State<UserScreen> {
@@ -54,7 +54,7 @@ class _UserScreenState extends State<UserScreen> {
     _refreshUsers();
   }).catchError((error) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to delete user')),
+      const SnackBar(content: Text('Failed to delete user')),
     );
   });
 }
@@ -64,10 +64,10 @@ class _UserScreenState extends State<UserScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('User Management'),
+        title: const Text('User Management'),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: _showAddUserDialog,
           ),
         ],
@@ -76,11 +76,11 @@ class _UserScreenState extends State<UserScreen> {
         future: users,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No users available'));
+            return const Center(child: Text('No users available'));
           } else {
             return ListView.builder(
               itemCount: snapshot.data!.length,
@@ -93,11 +93,11 @@ class _UserScreenState extends State<UserScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: Icon(Icons.edit),
+                        icon: const Icon(Icons.edit),
                         onPressed: () => _showEditUserDialog(user),
                       ),
                       IconButton(
-                        icon: Icon(Icons.delete),
+                        icon: const Icon(Icons.delete),
                         onPressed: () => _deleteUser(user.id),
                       ),
                     ],
@@ -125,7 +125,7 @@ class UserDialog extends StatefulWidget {
   });
 
   @override
-  _UserDialogState createState() => _UserDialogState();
+  State<UserDialog> createState() => _UserDialogState();
 }
 
 class _UserDialogState extends State<UserDialog> {
@@ -170,7 +170,7 @@ class _UserDialogState extends State<UserDialog> {
           Navigator.of(context).pop();
         }).catchError((error) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to add user')),
+            const SnackBar(content: Text('Failed to add user')),
           );
         });
       } else {
@@ -179,7 +179,7 @@ class _UserDialogState extends State<UserDialog> {
           Navigator.of(context).pop();
         }).catchError((error) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to update user')),
+            const SnackBar(content: Text('Failed to update user')),
           );
         });
       }
@@ -197,7 +197,7 @@ class _UserDialogState extends State<UserDialog> {
           children: [
             TextFormField(
               controller: _usernameController,
-              decoration: InputDecoration(labelText: 'Username'),
+              decoration: const InputDecoration(labelText: 'Username'),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter a username';
@@ -207,7 +207,7 @@ class _UserDialogState extends State<UserDialog> {
             ),
             TextFormField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(labelText: 'Email'),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter an email';
@@ -225,18 +225,18 @@ class _UserDialogState extends State<UserDialog> {
                   });
                 },
               );
-            }).toList(),
+            }),
           ],
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text('Cancel'),
+          child: const Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: _saveUser,
-          child: Text('Save'),
+          child: const Text('Save'),
         ),
       ],
     );

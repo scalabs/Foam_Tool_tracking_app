@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:alati_app/models/weekly_planning_model.dart';
-import 'package:charts_flutter/flutter.dart';
 import 'package:http/http.dart' as http;
 
 

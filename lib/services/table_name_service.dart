@@ -59,6 +59,7 @@ class FakeTableNameService implements TableNameService {
     return Future.value('Test');
   }
 
+  @override
   Future<void> updateName(String name) async {
     debugPrint('Function called updateName');
   }

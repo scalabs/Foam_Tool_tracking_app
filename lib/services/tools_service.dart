@@ -71,13 +71,13 @@ Future<void> addData(String tool, String filter) async {
     );
 
     if (response.statusCode == 200) {
-      print('Tool added successfully');
+      debugPrint('Tool added successfully');
     } else {
-      print('Failed to add tool: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      debugPrint('Failed to add tool: ${response.statusCode}');
+      debugPrint('Response body: ${response.body}');
     }
   } catch (e) {
-    print('Error adding tool: $e');
+    debugPrint('Error adding tool: $e');
   }
 }
 

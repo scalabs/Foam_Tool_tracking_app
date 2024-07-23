@@ -221,7 +221,7 @@ class _CarrierOverviewScreenState extends State<CarrierOverviewScreen> {
                                 3;
                             return DataRow(
                               color: isOverdue
-                                  ? MaterialStateProperty.all(
+                                  ? WidgetStateProperty.all(
                                       Colors.red.withOpacity(0.3))
                                   : null,
                               cells: <DataCell>[
@@ -247,7 +247,7 @@ class _CarrierOverviewScreenState extends State<CarrierOverviewScreen> {
                                             });
                                             saveData(); // Save data after deleting entry
                                           } catch (e) {
-                                            print('Error deleting carrier: $e');
+                                            debugPrint('Error deleting carrier: $e');
                                           }
                                         },
                                       ),                                     
@@ -302,7 +302,7 @@ class _CarrierOverviewScreenState extends State<CarrierOverviewScreen> {
                                     saveData(); // Example saveData function
 
                                   } catch (e) {
-                                    print('Error adding carrier: $e');
+                                    debugPrint('Error adding carrier: $e');
                                   }
                                 }
                               },
