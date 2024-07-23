@@ -10,7 +10,7 @@ dependencies:
     sdk: flutter
   flutter_pie_chart: ^0.0.1
   draggable_scrollbar: ^0.1.0
-  fl_chart: any # Use the latest version available
+  fl_chart: ^0.68.0 # Use the latest version available
   reorderables:
   # charts_flutter: 0.12.0
   excel: ^3.0.0
