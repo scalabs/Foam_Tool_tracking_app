@@ -9,7 +9,9 @@ class CarrierSelectionCubit extends Cubit<List<Carrier?>> {
       service; //So this is for saving the tools (interacting with the api<)
   final CarriersAllocationService allocationService;
   CarrierSelectionCubit(this.service, this.allocationService)
-      : super(List<Carrier?>.filled(22, null));
+      : super(List<Carrier?>.filled(22, null)) {
+    _init();
+  }
 
   Future<void> _init() async {
     final resp = await allocationService.fetchData();
