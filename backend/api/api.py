@@ -542,6 +542,114 @@ def handle_table_name_tools():
             print(f"Error adding tool '{table_name}': {str(e)}")
             return jsonify({"error": str(e)}), 500
 
+@app.route("/api/carriers_allocation", methods=["GET", "POST", "DELETE"])
+def handle_carriers_allocation():
+    if request.method == "GET":
+        cursor.execute(
+            "SELECT TOP (1000)  [name], [position] FROM [Foam_tools].[dbo].[carriers_allocation]"
+        )
+        carriers_allocation = [
+            dict(zip([column[0] for column in cursor.description], row))
+            for row in cursor.fetchall()
+        ]
+        return jsonify(carriers_allocation)
+
+    elif request.method == "POST":
+        data = request.get_json()
+        carrier_name = data.get('name')
+        carrier_position = data.get('position')
+        
+        # Ensure your connection and cursor are properly set up
+        try:
+            cursor.execute("DELETE FROM [Foam_tools].[dbo].[carriers_allocation] WHERE name = ?", (carrier_name))
+        
+            # Insert new record
+            insert_query = "INSERT INTO [Foam_tools].[dbo].[carriers_allocation] ([name], [position]) VALUES (?, ?)"
+            cursor.execute(insert_query, (carrier_name, carrier_position))
+            
+            print(f"Carrier '{carrier_name}' added to the database.")
+            return jsonify({"message": "Carrier added successfully"})
+        
+        except Exception as e:
+            conn.rollback()
+            print(f"Error adding carrier '{carrier_name}': {str(e)}")
+            return jsonify({"error": str(e)}), 500
+
+
+    elif request.method == "DELETE":
+        data = request.get_json()
+        carrier_name = data.get('name')
+        
+        try:
+            # Example SQL delete query
+            delete_query = """DELETE FROM [Foam_tools].[dbo].[carriers_allocation] WHERE name = ? """
+            
+            # Execute query with parameter tuple
+            cursor.execute(delete_query, (carrier_name))
+            conn.commit()
+            
+            print(f"Carrier '{carrier_name}' deleted from the database.")
+            return jsonify({"message": "Carrier deleted successfully"})
+        
+        except Exception as e:
+            conn.rollback()
+            print(f"Error deleting carrier '{carrier_name}': {str(e)}")
+            return jsonify({"error": str(e)}), 500
+
+@app.route("/api/tools_allocation", methods=["GET", "POST", "DELETE"])
+def handle_tools_allocation():
+    if request.method == "GET":
+        cursor.execute(
+            "SELECT TOP (1000)  [name], [position] FROM [Foam_tools].[dbo].[tools_allocation]"
+        )
+        tool_allocation = [
+            dict(zip([column[0] for column in cursor.description], row))
+            for row in cursor.fetchall()
+        ]
+        return jsonify(tool_allocation)
+
+    elif request.method == "POST":
+        data = request.get_json()
+        tool_name = data.get('name')
+        tool_position = data.get('position')
+        
+        # Ensure your connection and cursor are properly set up
+        try:
+            cursor.execute("DELETE FROM [Foam_tools].[dbo].[tools_allocation] WHERE name = ?", (tool_name))
+        
+            # Insert new record
+            insert_query = "INSERT INTO [Foam_tools].[dbo].[tools_allocation] ([name], [position]) VALUES (?, ?)"
+            cursor.execute(insert_query, (tool_name, tool_position))
+            
+            print(f"Tool '{tool_name}' added to the database.")
+            return jsonify({"message": "Tool added successfully"})
+        
+        except Exception as e:
+            conn.rollback()
+            print(f"Error adding tool '{tool_name}': {str(e)}")
+            return jsonify({"error": str(e)}), 500
+
+
+    elif request.method == "DELETE":
+        data = request.get_json()
+        tool_name = data.get('name')
+        
+        try:
+            # Example SQL delete query
+            delete_query = """DELETE FROM [Foam_tools].[dbo].[tools_allocation] WHERE name = ? """
+            
+            # Execute query with parameter tuple
+            cursor.execute(delete_query, (tool_name))
+            conn.commit()
+            
+            print(f"Tool '{tool_name}' deleted from the database.")
+            return jsonify({"message": "Tool deleted successfully"})
+        
+        except Exception as e:
+            conn.rollback()
+            print(f"Error deleting tool '{tool_name}': {str(e)}")
+            return jsonify({"error": str(e)}), 500
+
 
 
 if __name__ == '__main__':
