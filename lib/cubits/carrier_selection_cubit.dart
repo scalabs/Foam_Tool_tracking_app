@@ -24,11 +24,11 @@ class CarrierSelectionCubit extends Cubit<List<Carrier?>> {
           final item = resp.singleWhereOrNull(
             (element) => element.position == index,
           );
-          if (item != null) {
+          if (item == null) {
             return null;
           } else {
             return Carrier(
-              item!.name,
+              item.name,
               'Available',
               DateTime.now(),
               rotationAngle: angle,
