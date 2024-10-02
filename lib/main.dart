@@ -1,5 +1,6 @@
 import 'package:alati_app/cubits/carrier_allocation_cubit.dart';
 import 'package:alati_app/cubits/planning_cubit.dart';
+import 'package:alati_app/cubits/tool_allocation_cubit.dart';
 import 'package:alati_app/cubits/tool_fetcher_cubit.dart';
 import 'package:alati_app/cubits/tool_selection_cubit.dart';
 import 'package:alati_app/dashboard/dashboard.dart';
@@ -8,6 +9,7 @@ import 'package:alati_app/services/carrier_allocation_service.dart';
 import 'package:alati_app/services/carrier_service.dart';
 import 'package:alati_app/services/planning_service.dart';
 import 'package:alati_app/services/table_name_service.dart';
+import 'package:alati_app/services/tool_allocation_service.dart';
 import 'package:alati_app/services/tools_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -26,52 +28,54 @@ class FoamApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
-        RepositoryProvider(
+        RepositoryProvider<APIToolsService>(
           create: (context) => APIToolsService(),
         ),
-        RepositoryProvider(
+        RepositoryProvider<APICarriersService>(
           create: (context) => APICarriersService(),
         ),
-        RepositoryProvider(
+        RepositoryProvider<APITableNameService>(
           create: (context) => APITableNameService(),
         ),
-        RepositoryProvider(
+        RepositoryProvider<APICarriersAllocationService>(
           create: (context) => APICarriersAllocationService(),
         ),
-        RepositoryProvider(
-          //ovo mijenjati kad se planiranje napravi kako treba
+        RepositoryProvider<FakePlanningService>(
           create: (context) => FakePlanningService(),
+        ),
+        RepositoryProvider<APIToolsAllocationService>(
+          create: (context) => APIToolsAllocationService(),
         ),
       ],
       child: MultiBlocProvider(
         providers: [
-          BlocProvider(
-            create: (context) =>
-                ToolFetcherCubit(context.read<APIToolsService>()),
+          BlocProvider<ToolFetcherCubit>(
+            create: (context) => ToolFetcherCubit(context.read<APIToolsService>()),
           ),
-          BlocProvider(
-            create: (context) =>
-                ToolSelectionCubit(context.read<APIToolsService>()),
+          BlocProvider<ToolSelectionCubit>(
+            create: (context) => ToolSelectionCubit(
+              context.read<APIToolsService>(),
+              context.read<APIToolsAllocationService>(),
+            ),
           ),
-          BlocProvider(
-            create: (context) => CarrierFetcherCubit(context.read<
-                APICarriersService>()), // Initialize CarrierFetcherCubit with APICarriersService
+          BlocProvider<ToolsAllocationCubit>(
+            create: (context) => ToolsAllocationCubit(context.read<APIToolsAllocationService>()),
           ),
-          BlocProvider(
+          BlocProvider<CarrierFetcherCubit>(
+            create: (context) => CarrierFetcherCubit(context.read<APICarriersService>()),
+          ),
+          BlocProvider<CarrierSelectionCubit>(
             create: (context) => CarrierSelectionCubit(
               context.read<APICarriersService>(),
               context.read<APICarriersAllocationService>(),
             ),
           ),
-          BlocProvider(
-            create: (context) => CarriersAllocationCubit(
-                context.read<APICarriersAllocationService>()),
+          BlocProvider<CarriersAllocationCubit>(
+            create: (context) => CarriersAllocationCubit(context.read<APICarriersAllocationService>()),
           ),
-          BlocProvider(
-            //ovo mijenjati kad se planiranje napravi kako treba
+          BlocProvider<PlanningCubit>(
             create: (context) => PlanningCubit(
               selectedWeek: WeekOfTheYear(
-                //selfRef: null,
                 start: DateTime(2024, 1, 23),
                 end: DateTime(2024, 1, 28),
                 label: 'CW04',
@@ -79,7 +83,7 @@ class FoamApp extends StatelessWidget {
               ),
               service: context.read<FakePlanningService>(),
             ),
-          )
+          ),
         ],
         child: MaterialApp(
           home: const DashboardScreen(),
